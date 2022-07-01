@@ -59,7 +59,7 @@ class _Adam:
         for epoch in range(1, epochs + 1):
             fx, dfx = f_df(x)
             m = self.beta1 * m + (1 - self.beta1) * dfx
-            v = self.beta2 * v + (1 + self.beta2) * dfx**2
+            v = self.beta2 * v + (1 - self.beta2) * dfx**2
             mhat = m / (1 - self.beta1**epoch)
             vhat = v / (1 - self.beta2**epoch)
             x -= lr / (np.sqrt(vhat) + self.epsilon) * mhat
