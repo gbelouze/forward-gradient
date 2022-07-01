@@ -1,0 +1,65 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "forward"
+readme = "README.md"
+authors = [
+    {name = "Gabriel Belouze", email = "gabriel.belouze@lokad.com"}
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+requires-python = ">=3.5"
+license = {"file" = "LICENSE"}
+dynamic = ["version", "description"]
+
+[tool.flit.module]
+name = "forward"
+
+[project.urls]
+source = "https://github.com/gbelouze/forward"
+tracker = "https://github.com/gbelouze/forward/issues"
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "pytest",
+    "pre-commit"
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
