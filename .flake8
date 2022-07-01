@@ -3,3 +3,4 @@ show-source = True
 builtins = unicode
 max-line-length = 88
 extend-ignore = E203
+per-file-ignores = __init__.py:F401
