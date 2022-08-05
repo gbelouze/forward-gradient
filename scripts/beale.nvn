@@ -1,0 +1,55 @@
+def autodiff pure beale(x: number, y: number) with
+    return (1.5 - x + x*y)^2 +
+           (2.25 - x + x * y^2)^2 +
+           (2.625 - x + x * y^3)^2
+
+optimiser = "adabelief"
+
+x_beale = 0
+y_beale = 0.5
+autodiff Scalar "Beale \{optimiser}" \
+    epochs:10k \
+    learningRate:0.01 \
+    optimiser:optimiser with
+    params x_beale
+    params y_beale
+    return (beale(x_beale, y_beale), \
+            x: x_beale, \
+            y: y_beale)
+
+x_beale_forward_bernoulli = 0
+y_beale_forward_bernoulli = 0.5
+autodiff Scalar "Beale forward Bernoulli \{optimiser}" \
+    epochs:10k \
+    learningRate:0.01 \
+    mode:"forward" \
+    forwardLaw:"bernoulli" \
+    optimiser:optimiser with
+    params x_beale_forward_bernoulli
+    params y_beale_forward_bernoulli
+    return (beale(x_beale_forward_bernoulli, y_beale_forward_bernoulli), \
+            x: x_beale_forward_bernoulli, \
+            y: y_beale_forward_bernoulli)
+
+x_beale_forward_gaussian = 0
+y_beale_forward_gaussian = 0.5
+autodiff Scalar "Beale forward Gaussian \{optimiser}" \
+    epochs:10k \
+    learningRate:0.01 \
+    mode:"forward" \
+    forwardLaw:"gaussian" \
+    optimiser:optimiser with
+    params x_beale_forward_gaussian
+    params y_beale_forward_gaussian
+    return (beale(x_beale_forward_gaussian, y_beale_forward_gaussian), \
+            x: x_beale_forward_gaussian, \
+            y: y_beale_forward_gaussian)
+
+
+show table "Beale" with
+    x_beale as "x_beale"
+    y_beale as "y_beale"
+    x_beale_forward_bernoulli as "x_beale_forward_bernoulli"
+    y_beale_forward_bernoulli as "y_beale_forward_bernoulli"
+    x_beale_forward_gaussian as "x_beale_forward_gaussian"
+    y_beale_forward_gaussian as "y_beale_forward_gaussian"

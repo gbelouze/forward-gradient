@@ -1,0 +1,401 @@
+/// Utils
+
+// Calendar
+
+def pure seasonProfile(weekNumber: number, pivot: number) with
+  if weekNumber > 54
+    _ = assertfail("Weeknumber should be <=53 but was: \{weekNumber}")
+  else if weekNumber < 0
+    _ = assertfail("Weeknumber should be > 0 but was: \{weekNumber}")
+
+  modulo = abs((weekNumber - pivot) mod 52)
+  modulo = if modulo < 26 then modulo else 52 - modulo
+  distance = modulo / 26
+
+  return abs(1-distance)
+
+def pure winterProfile(weekNumber : number) with
+  return seasonProfile(weekNumber, 1)^4
+
+def pure springProfile(weekNumber : number) with
+  return seasonProfile(weekNumber, 14)^4
+
+def pure summerProfile(weekNumber : number) with
+  return seasonProfile(weekNumber, 27)^4
+
+def pure automnProfile(weekNumber : number) with
+  return seasonProfile(weekNumber, 40)^4
+
+def pure makeProfile(b : boolean, N : number, w : number, s : number, su : number, a : number, e : number) with
+  result =
+    if      N == 1 and b then
+      w
+    else if N == 2 and b then
+      s
+    else if N == 3 and b then
+      su
+    else if N == 4 and b then
+      a
+    else
+      e
+  return result
+
+
+export def pure CreateMinMaxAndProfile(b : boolean, N : number, w : number, s : number, su : number, a : number, p : number) with
+
+  Min     = makeProfile(b,N,w,s,su,a, 0)
+  Max     = makeProfile(b,N,w,s,su,a, 1)
+  Profile = makeProfile(b,N,w,s,su,a, p)
+
+  return (Min, Max, Profile)
+
+
+// Math
+
+const pi = 3.14159274101
+
+def autodiff pure distanceL2(x : number, y : number) with
+  return (x - y)^2
+
+/// see https://www.sfu.ca/~ssurjano/ackley.html
+def autodiff pure ackley(x:number, y:number) with
+  X2 = x ^ 2
+  Y2 = y ^ 2
+
+  a = -20 * exp(-0.2 * sqrt(0.5 * (X2 +Y2)))
+  b = exp(0.5*(cos(2 * pi * x)+cos(2 * pi * y))) - 22.718281
+
+  return a - b
+
+/// see https://www.sfu.ca/~ssurjano/booth.html
+def autodiff pure booth(x:number, y:number) with
+  a = x + 2 * y - 7
+  b = 2 * x + y - 5
+
+  return a * a + b * b
+
+
+/// see https://www.sfu.ca/~ssurjano/booth.html
+def autodiff pure xy(r:number, theta:number) with
+  return (r * cos(theta), r * sin(theta))
+
+/// see https://en.wikipedia.org/wiki/Sigmoid_function
+def autodiff pure sigmoid(x : number) with
+  return (1 + tanh(x/2)) / 2
+
+
+def autodiff pure linearPrediction(a : number, x : number, b : number) with
+  return a * x + b
+
+def autodiff pure linerRegressionL2(a : number, x : number, b : number, y :number) with
+  return distanceL2(y, linearPrediction(a,x,b))
+
+def autodiff pure leakuReLu(x: number, epsilon: number) with
+  return max(epsilon * x,x)
+
+
+def autodiff pure tan(x : number) with
+  return sin(x) / cos(x)
+
+
+def autodiff pure trend(logInit : number, theta : number, lambda : number, time : number) with
+
+  return exp(logInit) + tan(theta) * (1 - exp(-lambda * time))
+
+
+
+def autodiff pure error(n : number, y : number, ybar : number) with
+  delta = y - ybar
+  if (n mod 2 != 0)
+    delta = abs(delta)
+
+  return (delta)^n
+
+  // Main
+
+
+data_dir = "/data/"
+
+useSoftMax = false
+useFixedSeasonProfiles = false
+useCumSum = false
+useGaetan = false
+useMSLE = false
+errorL = 2
+
+profiles_count = 6
+maxEpochs = 20k
+optimiser = "sgd"
+learningRate = 0.00003
+learningRate_fwd = 0.000003
+
+
+read "\{data_dir}ItemsSmall.csv" as Items[Id] with
+  Id : table enum
+
+read "\{data_dir}SalesSmall.csv" as Orders expect [Id, Date] with
+  Id : enum Items
+  "Quantity" as Quantity : number
+  "Date" as Date : date
+
+expect table Items small
+
+firstDate = min(Orders.Date)
+// We keep 3 years of history
+lastdate = 3 * 52 * 7 + firstDate
+// Last year is used as testing
+pivotDate = lastdate - 52 * 7
+
+keep where date >= firstDate and date <= lastdate
+
+Week.Time = Week.week - week(firstDate)
+
+table ItemsWeek = cross(Items, Week)
+ItemsWeek.Demand = sum(Orders.Quantity)
+
+ItemsWeek.SmoothedDemand =
+  ( ItemsWeek.Demand[-2] +
+    ItemsWeek.Demand[-1] +
+    ItemsWeek.Demand     +
+    ItemsWeek.Demand[1]  +
+    ItemsWeek.Demand[2]  ) / 5
+
+
+// We use last year (of training data) as a baseline (on testing data)
+ItemsWeek.LastYear =
+  if week < week(pivotDate) then ItemsWeek.SmoothedDemand else ItemsWeek.SmoothedDemand[-52]
+
+/////////////////////////////////////////
+/////////// "GOOD" TABLES ///////////////
+/////////////////////////////////////////
+
+
+
+table Profiles max 10 = extend.range(profiles_count)
+table ProfilesWeek max 10k = cross(Profiles, Week)
+table WeekProfiles max 10k = cross(Week, Profiles)
+table WeekNumbers[WeekNumbers] max 52 = by ((Week.week - week(firstDate)) mod 52)
+table ProfilesWeekNumbers max 520 = cross(Profiles, WeekNumbers)
+ProfilesWeekNumbers.N = Profiles.N
+ProfilesWeek.WeekNumbers = WeekNumbers.WeekNumbers
+table ItemsProfiles /* >= 3k * 10 */ = cross(Items, Profiles)
+// table Groups[Region] max 500 = by Items.Region// # Test
+// table GroupsProfiles = cross(Groups, Profiles)// # Test
+
+expect table ItemsProfiles small 100m
+epsilon = 10e-3
+
+
+/////////// AUTODIFF ///////////////
+
+
+
+Week.weekRevert = week(today()) - Week.week
+
+
+
+show assert "My flags" with
+  not(useCumSum and useGaetan) as "combination not supported"
+
+
+
+where date < pivotDate
+
+
+  // Week.RevertDate = Week(pivotDate) - Week.week
+  // table RevertWeek[rW] = by Week.RevertDate
+
+
+
+  /// Adapted initialization
+  // Make sure that the mean of the initialized forecast is equal to the target:
+  Items.LogInit = log(max(avg(ItemsWeek.SmoothedDemand), epsilon))
+  muAffinity = 2 / profiles_count
+  sigmaAffinity = muAffinity / 4
+  muProfiles = 0.5
+  sigmaProfiles = 0.1
+
+
+  // if `useFixedSeasonProfiles` we force the 4 first profiles to be aligned with calendar seasons.
+  ProfilesWeekNumbers.Winter = winterProfile(ProfilesWeekNumbers.WeekNumbers)
+  ProfilesWeekNumbers.Spring = springProfile(ProfilesWeekNumbers.WeekNumbers)
+  ProfilesWeekNumbers.Summer = summerProfile(ProfilesWeekNumbers.WeekNumbers)
+  ProfilesWeekNumbers.Automn = automnProfile(ProfilesWeekNumbers.WeekNumbers)
+
+
+  ProfilesWeekNumbers.Random = random.normal(muProfiles into ProfilesWeekNumbers, sigmaProfiles)
+  ProfilesWeekNumbers.Min, ProfilesWeekNumbers.Max, ProfilesWeekNumbers.Profile =
+    CreateMinMaxAndProfile( useFixedSeasonProfiles,\
+                            ProfilesWeekNumbers.N,      \
+                            ProfilesWeekNumbers.Winter, \
+                            ProfilesWeekNumbers.Spring, \
+                            ProfilesWeekNumbers.Summer, \
+                            ProfilesWeekNumbers.Automn, \
+                            ProfilesWeekNumbers.Random)
+
+  ProfilesWeekNumbers.Profile_fwd = ProfilesWeekNumbers.Profile
+  Items.LogInit_fwd = Items.LogInit
+
+
+  autodiff Items "Forward \{optimiser}" epochs:maxEpochs learningRate:learningRate_fwd mode:"forward" optimiser:optimiser with
+      params ItemsProfiles.Affinity_fwd      in [0..] auto(muAffinity, sigmaAffinity)
+      params ProfilesWeekNumbers.Profile_fwd in [ProfilesWeekNumbers.Min .. ProfilesWeekNumbers.Max]
+
+      params Items.LogInit_fwd in [.. 80]
+      params Items.Theta_fwd   in [-Pi / 2 .. Pi / 2] auto(0, 0.1)
+      params Items.Lambda_fwd  in [0..] auto(0.01, 0.001)
+
+      Week.Trend = trend(Items.LogInit_fwd, Items.Theta_fwd, Items.Lambda_fwd, Week.Time)
+
+      Profiles.Affinities = ItemsProfiles.Affinity_fwd
+
+      Profiles.Affinities =
+        if useSoftMax then
+          exp(Profiles.Affinities) / (sum(exp(Profiles.Affinities)) into Scalar)
+        else
+          Profiles.Affinities / (sum(Profiles.Affinities) into Scalar)
+
+      ProfilesWeekNumbers.SeasonalityModel = Profiles.Affinities * ProfilesWeekNumbers.Profile_fwd
+      ProfilesWeek.Profile = ProfilesWeekNumbers.Profile_fwd
+
+
+      WeekNumbers.SeasonalityModel = sum(ProfilesWeekNumbers.SeasonalityModel)
+
+
+      ProfilesWeek.Forecast = ProfilesWeek.Profile         * Week.Trend
+      Week.Forecast         = WeekNumbers.SeasonalityModel * Week.Trend
+
+      Week.SmoothedDemand = ItemsWeek.SmoothedDemand
+
+      Week.Forecast         = if useMSLE then log(1+Week.Forecast)         else Week.Forecast
+      ProfilesWeek.Forecast = if useMSLE then log(1+ProfilesWeek.Forecast) else ProfilesWeek.Forecast
+      Week.SmoothedDemand   = if useMSLE then log(1+Week.SmoothedDemand)   else Week.SmoothedDemand
+
+      ProfilesWeek.Error = error(errorL, ProfilesWeek.Forecast, Week.SmoothedDemand)
+      Week.Error         = error(errorL, Week.Forecast,         Week.SmoothedDemand)
+
+      Week.CumSum = sum(Week.SmoothedDemand - Week.Forecast) scan Week.weekRevert
+
+      Profiles.loss = sum(ProfilesWeek.Error)
+      gaetanLoss = sum(Profiles.Affinities * Profiles.loss)
+      simonLoss = if useCumSum then sum(error(errorL, Week.CumSum, 0)) else sum(Week.Error)
+
+      loss = if useGaetan then gaetanLoss else simonLoss
+
+      return loss
+
+
+  autodiff Items "Reverse \{optimiser}" epochs:maxEpochs learningRate:learningRate optimiser:optimiser with
+      params ItemsProfiles.Affinity      in [0..] auto(muAffinity, sigmaAffinity)
+      params ProfilesWeekNumbers.Profile in [ProfilesWeekNumbers.Min .. ProfilesWeekNumbers.Max]
+
+      params Items.LogInit in [.. 80]
+      params Items.Theta   in [-Pi / 2 .. Pi / 2] auto(0, 0.1)
+      params Items.Lambda  in [0..] auto(0.01, 0.001)
+
+      Week.Trend = trend(Items.LogInit, Items.Theta, Items.Lambda, Week.Time)
+      Profiles.Affinities = ItemsProfiles.Affinity
+      Profiles.Affinities =
+        if useSoftMax then
+          exp(Profiles.Affinities) / (sum(exp(Profiles.Affinities)) into Scalar)
+        else
+          Profiles.Affinities / (sum(Profiles.Affinities) into Scalar)
+      ProfilesWeekNumbers.SeasonalityModel = Profiles.Affinities * ProfilesWeekNumbers.Profile
+      ProfilesWeek.Profile = ProfilesWeekNumbers.Profile
+
+      WeekNumbers.SeasonalityModel = sum(ProfilesWeekNumbers.SeasonalityModel)
+
+      ProfilesWeek.Forecast = ProfilesWeek.Profile         * Week.Trend
+      Week.Forecast         = WeekNumbers.SeasonalityModel * Week.Trend
+      Week.SmoothedDemand = ItemsWeek.SmoothedDemand
+      Week.Forecast         = if useMSLE then log(1+Week.Forecast)         else Week.Forecast
+      ProfilesWeek.Forecast = if useMSLE then log(1+ProfilesWeek.Forecast) else ProfilesWeek.Forecast
+      Week.SmoothedDemand   = if useMSLE then log(1+Week.SmoothedDemand)   else Week.SmoothedDemand
+
+      ProfilesWeek.Error = error(errorL, ProfilesWeek.Forecast, Week.SmoothedDemand)
+      Week.Error         = error(errorL, Week.Forecast,         Week.SmoothedDemand)
+      Week.CumSum = sum(Week.SmoothedDemand - Week.Forecast) scan Week.weekRevert
+
+      Profiles.loss = sum(ProfilesWeek.Error)
+      gaetanLoss = sum(Profiles.Affinities * Profiles.loss)
+      simonLoss = if useCumSum then sum(error(errorL, Week.CumSum, 0)) else sum(Week.Error)
+
+      loss = if useGaetan then gaetanLoss else simonLoss
+
+      return loss
+
+// Use autodiff results to build the forecast
+ItemsWeek.Forecast = each Items
+  Week.Trend = trend(Items.LogInit, Items.Theta, Items.Lambda, Week.Time)
+  Profiles.Affinities = ItemsProfiles.Affinity
+  Profiles.Affinities =
+    if useSoftMax then
+      exp(Profiles.Affinities) / (sum(exp(Profiles.Affinities)) into Scalar)
+    else
+      Profiles.Affinities / (sum(Profiles.Affinities) into Scalar)
+  ProfilesWeekNumbers.SeasonalityModel = Profiles.Affinities * ProfilesWeekNumbers.Profile
+  WeekNumbers.SeasonalityModel = sum(ProfilesWeekNumbers.SeasonalityModel)
+  Week.Forecast = WeekNumbers.SeasonalityModel * Week.Trend
+  return Week.Forecast
+
+
+// Use autodiff results to build the forecast
+ItemsWeek.Trend = trend(Items.LogInit, Items.Theta, Items.Lambda, Week.Time)
+  //return Week.Trend
+
+/////////// RESULTS ////////////////
+
+
+where date >= pivotDate
+
+
+  ItemsWeek.CumSumForecast = each Items
+    return cumsum(ItemsWeek.Forecast) scan Week.week
+  ItemsWeek.CumSumLastYear = each Items
+    return cumsum(ItemsWeek.LastYear) scan Week.week
+  ItemsWeek.CumSumDemand = each Items
+    return cumsum(ItemsWeek.SmoothedDemand) scan Week.week
+
+
+  Week.ErrorForecast = sum(ItemsWeek.Forecast - ItemsWeek.SmoothedDemand)
+  Week.ErrorLastYear = sum(ItemsWeek.LastYear - ItemsWeek.SmoothedDemand)
+
+  Week.CumSumErrorForecast = avg(error(2, ItemsWeek.CumSumForecast, ItemsWeek.CumSumDemand))
+  Week.CumSumErrorLastYear = avg(error(2, ItemsWeek.CumSumLastYear, ItemsWeek.CumSumDemand))
+
+  rmseForecast = sqrt(avg(Week.ErrorForecast^2))
+  rmseLastYear = sqrt(avg(Week.ErrorLastYear^2))
+
+  rmseCumSumForecast = sqrt(avg(Week.CumSumErrorForecast^2))
+  rmseCumSumLastYear = sqrt(avg(Week.CumSumErrorLastYear^2))
+
+  stdevForecast = stdev(Week.ErrorForecast)
+  stdevLastYear = stdev(Week.ErrorLastYear)
+
+  show scalar "RMSE with Last Year baseline" h1 with rmseLastYear
+  show scalar "RMSE with Forecast" h2 with rmseForecast
+
+
+  show scalar "cumsum RMSE with Last Year baseline" h7 with rmseCumSumLastYear
+  show scalar "cumsum RMSE with Forecast" h8 with rmseCumSumForecast
+
+  show scalar "Stedv Error with Last Year baseline" h4 with stdevLastYear
+  show scalar "Stedv Error with Forecast" h5 with stdevForecast
+
+  show linechart "CumSum" a12e15 with
+    sum(ItemsWeek.CumSumLastYear) as "Last Year" {color: #1579D6}
+    sum(ItemsWeek.CumSumForecast) as "Forecast"  {color: #C23613}
+    sum(ItemsWeek.CumSumDemand)   as "Real demand"    {color: #BAEDAD}
+    group by week
+
+// Make sure that autodiff parameters are used at least once
+show table "ItemsWeek" e8f10 with ItemsWeek.Forecast
+
+Week.IsFuture = all(week(date) >= week(pivotDate))
+
+show linechart "Aggregated" a2f6  with
+  sum(ItemsWeek.LastYear) as "Last Year" {color: #1579D6}
+  sum(ItemsWeek.Forecast) as "Forecast"  {color: #C23613}
+  sum(ItemsWeek.SmoothedDemand)   as "Real demand"    {color: #BAEDAD}
+  if Week.IsFuture then 1 else 0  as "Testing period" {seriesType: background ; seriesLegend: hidden ; seriesOpacity: 0.25 ; color: "#f99"}
+  group by week
