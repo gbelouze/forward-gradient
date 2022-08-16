@@ -1,0 +1,95 @@
+"""Generate the benchmarking data"""
+
+import time
+from dataclasses import dataclass
+from typing import Callable
+
+import autograd.numpy as np
+import pandas as pd
+
+from forward import objectives as obj
+from forward import optim
+
+
+@dataclass
+class Objectives:
+    name: str
+    dim: int
+    f: Callable[[np.ndarray], float]
+
+
+@dataclass
+class Optimizer:
+    name: str
+    optim: optim.Optim
+
+
+objectives = [
+    Objectives("beale", 2, lambda x: obj.beale(*x)),
+    Objectives("banana", 2, lambda x: obj.banana(*x)),
+    Objectives("rosenbrock10", 10, obj.rosenbrock),
+    Objectives("rosenbrock100", 100, obj.rosenbrock),
+    Objectives("sphere10", 10, obj.sphere),
+    Objectives("sphere100", 100, obj.sphere),
+    Objectives("hyperellipsoid10", 10, obj.hyperellipsoid),
+    Objectives("hyperellipsoid100", 100, obj.hyperellipsoid),
+    Objectives("griewank10", 10, obj.griewank),
+    Objectives("griewank100", 100, obj.griewank),
+]
+
+
+optimizers = [
+    Optimizer("Sgd", optim.SGD(optim.OptimConfig())),
+    Optimizer("SgdClip", optim.SGD(optim.OptimConfig(clip=True))),
+    Optimizer("SgdForward", optim.SGD(optim.OptimConfig(forward=True))),
+    Optimizer("SgdClipForward", optim.SGD(optim.OptimConfig(forward=True, clip=True))),
+    Optimizer("Adam", optim.Adam(optim.OptimConfig())),
+    Optimizer("AdamForward", optim.Adam(optim.OptimConfig(forward=True))),
+]
+
+
+TARGET = 1e-1
+results_ = []
+
+for objective in objectives:
+    print(objective.name)
+    theta0 = np.random.rand(objective.dim)
+    theta0 += theta0 / np.linalg.norm(theta0)
+    for optimizer in optimizers:
+        print("\t", optimizer.name)
+        try:
+            t1 = time.process_time()
+            epochs, theta, loss = optim.descent_fixed_cost(
+                objective.f, theta0, TARGET, optimizer.optim, lr=0.01
+            )
+            t2 = time.process_time()
+            cpu_time = t2 - t1
+            results_.append(
+                {
+                    "objective": objective.name,
+                    "optimizer": optimizer.name,
+                    "theta0": theta0,
+                    "theta": theta,
+                    "epochs": epochs,
+                    "cpu_time": cpu_time,
+                    "loss": loss,
+                }
+            )
+        except optim.DivergenceError:
+            results_.append(
+                {
+                    "objective": objective.name,
+                    "optimizer": optimizer.name,
+                    "theta0": theta0,
+                    "theta": None,
+                    "epochs": None,
+                    "cpu_time": None,
+                    "loss": None,
+                }
+            )
+
+results = pd.DataFrame(
+    results_,
+    columns=["objective", "optimizer", "theta0", "theta", "epochs", "cpu_time", "loss"],
+)
+results.to_csv("experiments.csv")
