@@ -103,7 +103,7 @@ for objective in objectives:
                             "loss": loss,
                         }
                     )
-                    if epochs < MAX_EPOCHS:
+                    if epochs >= MAX_EPOCHS:
                         print("\t", optimizer.name, "❌⏳", f"[final loss = {loss:.2f}]")
                     else:
                         print("\t", optimizer.name, "✔️")
