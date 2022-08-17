@@ -6,6 +6,16 @@ import autograd.numpy as np  # type: ignore
 from .grad import DOptimizable, Optimizable, df, df_fwd
 
 
+class DidNotConverge(Exception):
+    def __init__(self, loss, *args, **kwargs):
+        self._loss = loss
+        super().__init__()
+
+    @property
+    def loss(self):
+        return self._loss
+
+
 class DivergenceError(Exception):
     pass
 
@@ -144,6 +154,7 @@ class AdamUpdater(OptimUpdater):
         self.config = config
         self.m = None
         self.v = None
+        self.epoch = 0
         super().__init__()
 
     def step(self, grad: np.ndarray):
@@ -154,16 +165,59 @@ class AdamUpdater(OptimUpdater):
         if self.config.clip:
             grad[np.abs(grad) > 1] = np.sign(grad[np.abs(grad) > 1])
 
+        self.epoch += 1
         self.m = self.beta1 * self.m + (1 - self.beta1) * grad
         self.v = self.beta2 * self.v + (1 - self.beta2) * grad**2
 
     def dtheta(self) -> np.ndarray:
         assert self.m is not None
-        return self.m
+        assert self.v is not None
+        mhat = self.m / (1 - self.beta1**self.epoch)
+        vhat = self.v / (1 - self.beta2**self.epoch)
+        return mhat / (np.sqrt(vhat) + self.epsilon)
 
     def reset(self):
         self.m = None
         self.v = None
+        self.epoch = 0
+
+
+class AdaBeliefUpdater(OptimUpdater):
+
+    beta1 = 0.9
+    beta2 = 0.999
+    epsilon = 1e-8
+
+    def __init__(self, config: OptimConfig):
+        self.config = config
+        self.m = None
+        self.v = None
+        self.epoch = 0
+        super().__init__()
+
+    def step(self, grad: np.ndarray):
+        if self.m is None:
+            self.m = np.zeros(grad.shape)
+        if self.v is None:
+            self.v = np.zeros(grad.shape)
+        if self.config.clip:
+            grad[np.abs(grad) > 1] = np.sign(grad[np.abs(grad) > 1])
+
+        self.epoch += 1
+        self.m = self.beta1 * self.m + (1 - self.beta1) * grad
+        self.v = self.beta2 * self.v + (1 - self.beta2) * (grad - self.m) ** 2
+
+    def dtheta(self) -> np.ndarray:
+        assert self.m is not None
+        assert self.v is not None
+        mhat = self.m / (1 - self.beta1**self.epoch)
+        vhat = self.v / (1 - self.beta2**self.epoch)
+        return mhat / (np.sqrt(vhat) + self.epsilon)
+
+    def reset(self):
+        self.m = None
+        self.v = None
+        self.epoch = 0
 
 
 def SGD(config: OptimConfig) -> Optim:
@@ -174,8 +228,17 @@ def Adam(config: OptimConfig) -> Optim:
     return Optim(config, AdamUpdater(config))
 
 
+def AdaBelief(config: OptimConfig) -> Optim:
+    return Optim(config, AdaBeliefUpdater(config))
+
+
 def descent_fixed_cost(
-    f: Optimizable, theta0: np.ndarray, target: float, optim: Optim, lr: float
+    f: Optimizable,
+    theta0: np.ndarray,
+    target: float,
+    optim: Optim,
+    lr: float,
+    max_epochs: int = 1_000,
 ):
     theta = theta0.copy()
     with optim.optimize(f) as optf:
@@ -183,7 +246,9 @@ def descent_fixed_cost(
         while (loss := optf.loss(theta)) > target:
             theta -= lr * optf.dtheta()
             epoch += 1
-            if loss > 1e5 or epoch > 1e4:
+            if epoch >= max_epochs:
+                break
+            if loss > 1e5:
                 raise DivergenceError
         return epoch, theta, optf.loss(theta)
 
