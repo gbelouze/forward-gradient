@@ -2,6 +2,7 @@
 
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 import autograd.numpy as np
@@ -126,4 +127,8 @@ results = pd.DataFrame(
     results_,
     columns=["objective", "optimizer", "theta0", "theta", "epochs", "cpu_time", "loss"],
 )
-results.to_csv("experiments.csv")
+
+id = 0
+while Path(f"data/experiments-{id}.csv").exists():
+    id += 1
+results.to_csv(f"data/experiments-{id}.csv")
