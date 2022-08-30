@@ -24,6 +24,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import inspect
+import sys
+
 import autograd.numpy as np
 
 
@@ -3432,3 +3435,28 @@ class Zakharov:
         i = np.arange(1, d + 1)
         res = np.sum(X**2) + np.sum(0.5 * i * X) ** 2 + np.sum(0.5 * i * X) ** 4
         return res
+
+
+available_functions = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+
+
+def get_functions(
+    d,
+    continuous=None,
+    convex=None,
+    separable=None,
+    differentiable=None,
+    mutimodal=None,
+    randomized_term=None,
+):
+    return [
+        f
+        for _fname, f in available_functions
+        if f.is_dim_compatible(d)
+        if ((continuous is None) or (f.continuous == continuous))
+        if ((convex is None) or (f.convex == convex))
+        if ((separable is None) or (f.separable == separable))
+        if ((differentiable is None) or (f.differentiable == differentiable))
+        if ((mutimodal is None) or (f.mutimodal == mutimodal))
+        if ((randomized_term is None) or (f.randomized_term == randomized_term))
+    ]
