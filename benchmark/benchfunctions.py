@@ -45,7 +45,7 @@ class Thevenot:
     convex = True
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -65,11 +65,15 @@ class Thevenot:
     def get_param(self):
         return {"m": self.m, "beta": self.beta}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.exp(-np.sum((X / self.beta) ** (2 * self.m)))
         res = res - 2 * np.exp(-np.prod(X**2)) * np.prod(np.cos(X) ** 2)
         return res
@@ -90,7 +94,7 @@ class Ackley:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -111,12 +115,16 @@ class Ackley:
     def get_param(self):
         return {"a": self.a, "b": self.b, "c": self.c}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([1 / (i + 1) for i in range(d)])
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = -self.a * np.exp(-self.b * np.sqrt(np.mean(X**2)))
         res = res - np.exp(np.mean(np.cos(self.c * X))) + self.a + np.exp(1)
         return res
@@ -132,7 +140,7 @@ class AckleyN2:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -143,17 +151,22 @@ class AckleyN2:
         ), "The dimension d must be None or a positive integer"
         return d == 2
 
-    def __init__(self, d=None):
+    def __init__(self, d=2):
+        self.d = d
         self.input_domain = np.array([[-32, 32], [-32, 32]])
 
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -200 * np.exp(-0.2 * np.sqrt(x**2 + y**2))
         return res
@@ -172,7 +185,7 @@ class AckleyN3:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -189,11 +202,15 @@ class AckleyN3:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0.682584587365898, -0.36075325513719])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -200 * np.exp(-0.2 * np.sqrt(x**2 + y**2))
         res += 5 * np.exp(np.cos(3 * x) + np.sin(3 * y))
@@ -217,7 +234,7 @@ class AckleyN4:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -234,12 +251,16 @@ class AckleyN4:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         print("WARNING ! Is only is available for d=2")
         X = np.array([-1.51, -0.755])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         X, Xp1 = X[:-1], X[1]
         res = np.sum(
             np.exp(-0.2) * np.sqrt(X**2 + Xp1**2)
@@ -259,7 +280,7 @@ class Adjiman:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -277,12 +298,16 @@ class Adjiman:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([1 / (i + 1) for i in range(d)])
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = np.cos(x) * np.sin(y) - x / (y**2 + 1)
         return res
@@ -300,7 +325,7 @@ class AlpineN1:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -318,11 +343,15 @@ class AlpineN1:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.abs(X * np.sin(X) + 0.1 * X))
         return res
 
@@ -339,7 +368,7 @@ class AlpineN2:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -357,11 +386,15 @@ class AlpineN2:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([7.917 for i in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = -np.prod(np.sqrt(X) * np.sin(X))
         return res
 
@@ -376,7 +409,7 @@ class Bartels:
     convex = False
     separable = False
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -394,11 +427,15 @@ class Bartels:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = np.abs(x**2 + y**2 + x * y) + np.abs(np.sin(x)) + np.abs(np.cos(y))
         return res
@@ -414,7 +451,7 @@ class Beale:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -432,11 +469,15 @@ class Beale:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([3, 0.5])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             (1.5 - x + x * y) ** 2
@@ -461,7 +502,7 @@ class Bird:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -479,11 +520,15 @@ class Bird:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([4.70104, 3.15294], [-1.58214, -3.13024])
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = np.sin(x) * np.exp((1 - np.cos(y)) ** 2)
         res = res + np.cos(y) * np.exp((1 - np.sin(x)) ** 2) + (x - y) ** 2
@@ -500,7 +545,7 @@ class BohachevskyN1:
     convex = True
     separable = True
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -518,11 +563,15 @@ class BohachevskyN1:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             x**2
@@ -544,7 +593,7 @@ class BohachevskyN2:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -562,11 +611,15 @@ class BohachevskyN2:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             x**2
@@ -587,7 +640,7 @@ class BohachevskyN3:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -605,11 +658,15 @@ class BohachevskyN3:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             x**2
@@ -630,7 +687,7 @@ class Booth:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -648,13 +705,17 @@ class Booth:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
-        X = np.array([1, 3])
+    def get_global_minimum(self):
+        self.d
+        X = np.array([1.0, 3.0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
-        res = (x + 2 * y - 7) ** 2 + (2 * x + y - 5) ** 2
+        res = (x + 2.0 * y - 7.0) ** 2.0 + (2.0 * x + y - 5.0) ** 2
         return res
 
 
@@ -671,7 +732,7 @@ class Branin:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -685,12 +746,12 @@ class Branin:
     def __init__(
         self,
         d,
-        a=1,
-        b=5.1 / (4 * np.pi**2),
-        c=5 / np.pi,
-        r=6,
-        s=10,
-        t=1 / (8 * np.pi),
+        a=1.0,
+        b=5.1 / (4.0 * np.pi**2),
+        c=5.0 / np.pi,
+        r=6.0,
+        s=10.0,
+        t=1 / (8.0 * np.pi),
     ):
         self.d = d
         self.input_domain = np.array([[-5, 10], [0, 15]])
@@ -711,11 +772,15 @@ class Branin:
             "t": self.t,
         }
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([[-np.pi, 12.275], [np.pi, 2.275], [9.42478, 2.475]])
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = self.a * (y - self.b * x**2 + self.c * x - self.r) ** 2
         res = res + self.s * (1 - self.t) * np.cos(x) + self.s
@@ -732,7 +797,7 @@ class Brent:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -750,13 +815,17 @@ class Brent:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([-10, -10])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
-        res = (x + 10) ** 2 + (y + 10) ** 2 + np.exp(-(x**2) - y**2)
+        res = (x + 10.0) ** 2 + (y + 10.0) ** 2 + np.exp(-(x**2) - y**2)
         return res
 
 
@@ -775,7 +844,7 @@ class Brown:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -786,17 +855,22 @@ class Brown:
         ), "The dimension d must be None or a positive integer"
         return (d is None) or (d > 0)
 
-    def __init__(self, d=None):
+    def __init__(self, d):
+        self.d = d
         self.input_domain = np.array([[-1, 4] for _ in range(d)])
 
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         X, Xp1 = X[:-1], X[1]
         res = np.sum((X**2) ** (Xp1**2 + 1) + (Xp1**2) ** (X**2 + 1))
         return res
@@ -812,7 +886,7 @@ class BukinN6:
     convex = True
     separable = False
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -830,13 +904,17 @@ class BukinN6:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
-        X = np.array([-10, 1])
+    def get_global_minimum(self):
+        self.d
+        X = np.array([-10.0, 1.0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
-        res = 100 * np.sqrt(np.abs(y - 0.01 * x**2)) + 0.01 * np.abs(x + 10)
+        res = 100.0 * np.sqrt(np.abs(y - 0.01 * x**2)) + 0.01 * np.abs(x + 10.0)
         return res
 
 
@@ -856,7 +934,7 @@ class Colville:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -874,11 +952,15 @@ class Colville:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([1, 1, 1, 1])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x1, x2, x3, x4 = X
         res = 100 * (x1**2 - x2) ** 2 + (x1 - 1) ** 2 + (x3 - 1) ** 2
         res = (
@@ -905,7 +987,7 @@ class CrossInTray:
     convex = False
     separable = False
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -923,7 +1005,8 @@ class CrossInTray:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array(
             [
                 [-1.349406685353340, +1.349406608602084],
@@ -935,6 +1018,9 @@ class CrossInTray:
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             -0.0001
@@ -961,7 +1047,7 @@ class DeJongN5:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -984,11 +1070,15 @@ class DeJongN5:
     def get_param(self):
         return {"a": self.a}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = self.a[0]
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             0.002
@@ -1012,7 +1102,7 @@ class DeckkersAarts:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1030,11 +1120,15 @@ class DeckkersAarts:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([[0, -15], [0, 15]])
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = 1e5 * x**2 + y**2 - (x**2 + y**2) + 1e-5 * (x**2 + y**2) ** 4
         return res
@@ -1054,7 +1148,7 @@ class DixonPrice:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1072,11 +1166,15 @@ class DixonPrice:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([2 ** ((-(2 ** (i)) - 2) / 2**i) for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = (X[0] - 1) ** 2 + np.sum(
             [(i + 1) * (2 * X[i] ** 2 - X[i - 1]) ** 2 for i in range(1, d)]
@@ -1096,7 +1194,7 @@ class DropWave:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1114,11 +1212,15 @@ class DropWave:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -(1 + np.cos(12 * np.sqrt(x**2 + y**2))) / (
             0.5 * (x**2 + y**2) + 2
@@ -1136,7 +1238,7 @@ class Easom:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1154,11 +1256,15 @@ class Easom:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([np.pi, np.pi])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -np.cos(x) * np.cos(y) * np.exp(-((x - np.pi) ** 2) - (y - np.pi) ** 2)
         return res
@@ -1174,7 +1280,7 @@ class EggCrate:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1192,11 +1298,15 @@ class EggCrate:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = x**2 + y**2 + 25 * (np.sin(x) ** 2 + np.sin(y) ** 2)
         return res
@@ -1215,7 +1325,7 @@ class EggHolder:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1233,11 +1343,15 @@ class EggHolder:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([512, 404.2319])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -(y + 47) * np.sin(np.sqrt(np.abs(y + x / 2 + 47))) - x * np.sin(
             np.sqrt(np.abs(x - y - 47))
@@ -1257,7 +1371,7 @@ class Exponential:
     convex = True
     separable = True
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1275,11 +1389,15 @@ class Exponential:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = -np.exp(-0.5 * np.sum(X**2))
         return res
 
@@ -1294,7 +1412,7 @@ class Forrester:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1312,11 +1430,15 @@ class Forrester:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0.757249])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x = X[0]
         res = ((6 * x - 2) ** 2) * np.sin(12 * x - 4)
         return res
@@ -1335,7 +1457,7 @@ class GoldsteinPrice:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1353,11 +1475,15 @@ class GoldsteinPrice:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, -1])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = 1 + (x + y + 1) ** 2 * (
             19 - 14 * x + 3 * x**2 - 14 * y + 6 * x * y + 3 * y**2
@@ -1378,7 +1504,7 @@ class GramacyLee:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1396,11 +1522,15 @@ class GramacyLee:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0.548563444114526])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x = X[0]
         res = np.sin(10 * np.pi * x) / 2 / x + (x - 1) ** 4
         return res
@@ -1421,7 +1551,7 @@ class Griewank:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1439,11 +1569,15 @@ class Griewank:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         i = np.arange(1, d + 1)
         res = 1 + np.sum(X**2 / 4000) - np.prod(np.cos(X / np.sqrt(i)))
@@ -1466,7 +1600,7 @@ class HappyCat:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -1485,11 +1619,15 @@ class HappyCat:
     def get_param(self):
         return {"alpha": self.alpha}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([-1 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         norm = np.sum(X**2)
         res = ((norm - d) ** 2) ** self.alpha + (1 / d) * (0.5 * norm + np.sum(X)) + 0.5
@@ -1509,7 +1647,7 @@ class Himmelblau:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1527,7 +1665,8 @@ class Himmelblau:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array(
             [
                 [3, 2],
@@ -1539,6 +1678,9 @@ class Himmelblau:
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (x**2 + y - 11) ** 2 + (x + y**2 - 7) ** 2
         return res
@@ -1554,7 +1696,7 @@ class HolderTable:
     convex = False
     separable = False
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1572,7 +1714,8 @@ class HolderTable:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array(
             [
                 [-8.05502, 9.66459],
@@ -1584,6 +1727,9 @@ class HolderTable:
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -np.abs(
             np.sin(x) * np.cos(y) * np.exp(np.abs(1 - np.sqrt(x**2 + y**2) / np.pi))
@@ -1604,7 +1750,7 @@ class Keane:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1622,11 +1768,15 @@ class Keane:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([[1.393249070031784, 0], [0, 1.393249070031784]])
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = -(np.sin(x - y) ** 2 * np.sin(x + y) ** 2) / np.sqrt(x**2 + y**2)
         return res
@@ -1648,7 +1798,7 @@ class Langermann:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -1671,11 +1821,15 @@ class Langermann:
     def get_param(self):
         return {"m": self.m, "c": self.c, "A": self.A}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(
             [
                 self.c[i]
@@ -1697,7 +1851,7 @@ class Leon:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1715,11 +1869,15 @@ class Leon:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([1, 1])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = 100 * (y - x**3) ** 2 + (1 - x) ** 2
         return res
@@ -1737,7 +1895,7 @@ class LevyN13:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1755,11 +1913,15 @@ class LevyN13:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([1, 1])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             np.sin(3 * np.pi * x) ** 2
@@ -1779,7 +1941,7 @@ class Matyas:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -1797,11 +1959,15 @@ class Matyas:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = 0.26 * (x**2 + y**2) - 0.48 * x * y
         return res
@@ -1817,7 +1983,7 @@ class McCormick:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1835,11 +2001,15 @@ class McCormick:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([-0.547, -1.547])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = np.sin(x + y) + (x - y) ** 2 - 1.5 * x + 2.5 * y + 1
         return res
@@ -1860,7 +2030,7 @@ class Michalewicz:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -1879,12 +2049,16 @@ class Michalewicz:
     def get_param(self):
         return {"m": self.m}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         assert d == 2, "Michalewicz minimum is only given for d=2"
         X = np.array([2.20, 1.57])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         i = np.arange(1, d + 1)
         res = -np.sum(np.sin(X) * np.sin(i * X**2 / np.pi) ** (2 * self.m))
@@ -1905,7 +2079,7 @@ class Periodic:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -1923,11 +2097,15 @@ class Periodic:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = 1 + np.sum(np.sin(X) ** 2) - 0.1 * np.exp(-np.sum(X**2))
         return res
 
@@ -1947,7 +2125,7 @@ class PermZeroDBeta:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = True
 
@@ -1966,11 +2144,15 @@ class PermZeroDBeta:
     def get_param(self):
         return {"beta": self.beta}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([1 / (i + 1) for i in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = np.sum(
             [
@@ -2004,7 +2186,7 @@ class PermDBeta:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -2023,11 +2205,15 @@ class PermDBeta:
     def get_param(self):
         return {"beta": self.beta}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([1 / (i + 1) for i in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         j = np.arange(1, d + 1)
         res = np.sum(
@@ -2051,7 +2237,7 @@ class Powell:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2069,11 +2255,15 @@ class Powell:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = np.sum(np.abs(X) ** np.arange(2, d + 2))
         return res
@@ -2091,7 +2281,7 @@ class Qing:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2109,7 +2299,8 @@ class Qing:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         X = np.array([range(d)]) + 1
         for i in range(d):
@@ -2119,6 +2310,9 @@ class Qing:
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         X1 = np.power(X, 2)
 
@@ -2140,7 +2334,7 @@ class Quartic:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = True
     parametric = False
 
@@ -2158,11 +2352,15 @@ class Quartic:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = np.sum(np.arange(1, d + 1) * X**4) + np.random.random()
         return res
@@ -2180,7 +2378,7 @@ class Rastrigin:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2198,11 +2396,15 @@ class Rastrigin:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = 10 * d + np.sum(X**2 - 10 * np.cos(2 * np.pi * X))
         return res
@@ -2223,7 +2425,7 @@ class Ridge:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = True
 
@@ -2243,12 +2445,16 @@ class Ridge:
     def get_param(self):
         return {"beta": self.beta, "alpha": self.alpha}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         X[0] = self.input_domain[0, 0]
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = X[0] + self.beta * np.sum(X[1:] ** 2) ** self.alpha
         return res
 
@@ -2267,7 +2473,7 @@ class Rosenbrock:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -2287,11 +2493,15 @@ class Rosenbrock:
     def get_param(self):
         return {"a": self.a, "b": self.b}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([1 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(
             np.abs(self.b * (X[1:] - X[:-1] ** 2) ** 2 + (self.a - X[:-1]) ** 2)
         )
@@ -2310,7 +2520,7 @@ class RotatedHyperEllipsoid:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2331,11 +2541,15 @@ class RotatedHyperEllipsoid:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = np.sum([np.sum(X[: i + 1] ** 2) for i in range(d)])
         return res
@@ -2356,7 +2570,7 @@ class Salomon:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2377,11 +2591,15 @@ class Salomon:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = 1 - np.cos(2 * np.pi * np.sqrt(np.sum(X**2)))
         res = res + 0.1 * np.sqrt(np.sum(X**2))
         return res
@@ -2397,7 +2615,7 @@ class SchaffelN1:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2415,11 +2633,15 @@ class SchaffelN1:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             0.5
@@ -2439,7 +2661,7 @@ class SchaffelN2:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2457,11 +2679,15 @@ class SchaffelN2:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             0.5
@@ -2483,7 +2709,7 @@ class SchaffelN3:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2501,11 +2727,15 @@ class SchaffelN3:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 1.253115])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             0.5
@@ -2527,7 +2757,7 @@ class SchaffelN4:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2545,11 +2775,15 @@ class SchaffelN4:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 1.253115])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = (
             0.5
@@ -2571,7 +2805,7 @@ class Schwefel:
     convex = False
     separable = True
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2592,11 +2826,15 @@ class Schwefel:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([420.9687 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         res = 418.9829 * d - np.sum(X * np.sin(np.sqrt(np.abs(X))))
         return res
@@ -2614,7 +2852,7 @@ class Schwefel2_20:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2635,11 +2873,15 @@ class Schwefel2_20:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.abs(X))
         return res
 
@@ -2656,7 +2898,7 @@ class Schwefel2_21:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2677,11 +2919,15 @@ class Schwefel2_21:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.max(np.abs(X))
         return res
 
@@ -2698,7 +2944,7 @@ class Schwefel2_22:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2719,11 +2965,15 @@ class Schwefel2_22:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.abs(X)) + np.prod(np.abs(X))
         return res
 
@@ -2740,7 +2990,7 @@ class Schwefel2_23:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -2761,11 +3011,15 @@ class Schwefel2_23:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(X**10)
         return res
 
@@ -2787,7 +3041,7 @@ class Shekel:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = True
 
@@ -2829,11 +3083,15 @@ class Shekel:
     def get_param(self):
         return {"m": self.m, "C": self.C, "beta": self.beta}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = self.C[0]
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x1, x2, x3, x4 = X
         res = -np.sum(
             [
@@ -2860,7 +3118,7 @@ class Shubert:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2881,10 +3139,14 @@ class Shubert:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         return None
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         for i in range(0, d):
             res = np.prod(
@@ -2905,7 +3167,7 @@ class ShubertN3:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2926,11 +3188,15 @@ class ShubertN3:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([-7.4, -7.4])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.sum([j * np.sin((j + 1) * X + j) for j in range(1, 5 + 1)]))
         return res
 
@@ -2947,7 +3213,7 @@ class ShubertN4:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -2968,11 +3234,15 @@ class ShubertN4:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([4.85, 4.85])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.sum([j * np.cos((j + 1) * X + j) for j in range(1, 5 + 1)]))
         return res
 
@@ -2989,7 +3259,7 @@ class Sphere:
     convex = True
     separable = True
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3010,11 +3280,15 @@ class Sphere:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(X**2)
         return res
 
@@ -3031,7 +3305,7 @@ class StyblinskiTank:
     convex = False
     separable = True
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -3052,11 +3326,15 @@ class StyblinskiTank:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([-2.903534 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = 0.5 * np.sum(X**4 - 16 * X**2 + 5 * X)
         return res
 
@@ -3073,7 +3351,7 @@ class SumSquares:
     convex = True
     separable = True
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3091,11 +3369,15 @@ class SumSquares:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for _ in range(d)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         i = np.arange(1, d + 1)
         res = np.sum(i * X**2)
@@ -3112,7 +3394,7 @@ class ThreeHump:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3130,11 +3412,15 @@ class ThreeHump:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y = X
         res = 2 * x**2 - 1.05 * x**4 + x**6 * (1 / 6) + x * y + y**2
         return res
@@ -3156,7 +3442,7 @@ class Trid:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3174,11 +3460,15 @@ class Trid:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([i * (d + 1 - i) for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(X - 1) ** 2 - np.sum(X[1:] * X[:-1])
         return res
 
@@ -3195,7 +3485,7 @@ class Wolfe:
     convex = False
     separable = False
     differentiable = True
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -3213,11 +3503,15 @@ class Wolfe:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        self.d
         X = np.array([0, 0, 0])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         x, y, z = X
         res = 4 / 3 * (x**2 + y**2 - x * y) ** 0.75 + z
         return res
@@ -3235,7 +3529,7 @@ class XinSheYang:
     convex = False
     separable = True
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = True
     parametric = False
 
@@ -3253,11 +3547,15 @@ class XinSheYang:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         i = np.arange(1, d + 1)
         rand = np.random.random(d)
@@ -3277,7 +3575,7 @@ class XinSheYangN2:
     convex = False
     separable = False
     differentiable = False
-    mutimodal = True
+    multimodal = True
     randomized_term = False
     parametric = False
 
@@ -3295,11 +3593,15 @@ class XinSheYangN2:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.abs(X)) * np.exp(-np.sum(np.sin(X**2)))
         return res
 
@@ -3319,7 +3621,7 @@ class XinSheYangN3:
     convex = True
     separable = False
     differentiable = True
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = True
 
@@ -3339,11 +3641,15 @@ class XinSheYangN3:
     def get_param(self):
         return {"m": self.m, "beta": self.beta}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.exp(-np.sum((X / self.beta) ** (2 * self.m)))
         res = res - 2 * np.exp(-np.sum(X**2)) * np.prod(np.cos(X) ** 2)
         return res
@@ -3364,7 +3670,7 @@ class XinSheYangN4:
     convex = True
     separable = False
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3382,11 +3688,15 @@ class XinSheYangN4:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         res = np.sum(np.sin(X) ** 2 - np.exp(-np.sum(X) ** 2)) * np.exp(
             -np.sum(np.sin(np.sqrt(np.abs(X))) ** 2)
         )
@@ -3408,7 +3718,7 @@ class Zakharov:
     convex = False
     separable = False
     differentiable = False
-    mutimodal = False
+    multimodal = False
     randomized_term = False
     parametric = False
 
@@ -3426,11 +3736,15 @@ class Zakharov:
     def get_param(self):
         return {}
 
-    def get_global_minimum(self, d):
+    def get_global_minimum(self):
+        d = self.d
         X = np.array([0 for i in range(1, d + 1)])
         return (X, self(X))
 
     def __call__(self, X):
+        return self.f(X)
+
+    def f(self, X):
         d = X.shape[0]
         i = np.arange(1, d + 1)
         res = np.sum(X**2) + np.sum(0.5 * i * X) ** 2 + np.sum(0.5 * i * X) ** 4
@@ -3446,7 +3760,7 @@ def get_functions(
     convex=None,
     separable=None,
     differentiable=None,
-    mutimodal=None,
+    multimodal=None,
     randomized_term=None,
 ):
     return [
@@ -3457,6 +3771,6 @@ def get_functions(
         if ((convex is None) or (f.convex == convex))
         if ((separable is None) or (f.separable == separable))
         if ((differentiable is None) or (f.differentiable == differentiable))
-        if ((mutimodal is None) or (f.mutimodal == mutimodal))
+        if ((multimodal is None) or (f.multimodal == multimodal))
         if ((randomized_term is None) or (f.randomized_term == randomized_term))
     ]
