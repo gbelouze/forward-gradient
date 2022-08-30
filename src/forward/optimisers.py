@@ -248,7 +248,7 @@ def descent_fixed_cost(
             epoch += 1
             if epoch >= max_epochs:
                 break
-            if loss > 1e5:
+            if loss - target > 1e5:
                 raise DivergenceError
         return epoch, theta, optf.loss(theta)
 

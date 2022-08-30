@@ -29,6 +29,8 @@ def sphere(x):
 
 def hyperellipsoid(x):
     scale = np.arange(1, 1 + x.shape[0])
+    if x.ndim > 1:
+        scale = np.reshape(scale, [x.shape[0], *[1 for _ in x.shape[1:]]])
     return np.sum(scale * x**2, axis=0) / np.sum(scale)
 
 

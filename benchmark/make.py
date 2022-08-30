@@ -7,6 +7,7 @@ from typing import Callable
 
 import autograd.numpy as np
 import pandas as pd
+from benchfunctions import get_functions
 
 from forward import objectives as obj
 from forward import optim
@@ -68,26 +69,36 @@ optimizers = [
 ]
 
 
+def sample_in_domain(domain):
+    d = domain.shape[0]
+    theta = np.random.rand(d)
+    return domain[:, 0] + theta * (domain[:, 1] - domain[:, 0])
+
+
+DIM = 2
+objectives = [f(DIM) for f in get_functions(DIM, multimodal=False)]
+
 TARGET = 1e-1
 N_INITIALISATIONS = 5
 MAX_EPOCHS = 50_000
 results_ = []
 
+expID = 0
 for objective in objectives:
     for _ in range(N_INITIALISATIONS):
         print(objective.name)
-        theta0 = np.random.rand(objective.dim)
-        theta0 += theta0 / np.linalg.norm(theta0)
+        theta_star, f_star = objective.get_global_minimum()
+        theta0 = sample_in_domain(objective.input_domain)
+        expID += 1
         for optimizer in optimizers:
-
             for _ in range(5 if optimizer.stochastic else 1):
                 try:
                     t1 = time.process_time()
-                    epochs, theta, loss = optim.descent_fixed_cost(
-                        objective.f,
-                        theta0,
-                        TARGET,
-                        optimizer.optim,
+                    epochs, _theta, loss = optim.descent_fixed_cost(
+                        f=objective.f,
+                        theta0=theta0,
+                        target=f_star + TARGET,
+                        optim=optimizer.optim,
                         lr=0.01,
                         max_epochs=MAX_EPOCHS,
                     )
@@ -97,8 +108,7 @@ for objective in objectives:
                         {
                             "objective": objective.name,
                             "optimizer": optimizer.name,
-                            "theta0": theta0,
-                            "theta": theta,
+                            "expID": expID,
                             "epochs": epochs,
                             "cpu_time": cpu_time,
                             "loss": loss,
@@ -114,8 +124,7 @@ for objective in objectives:
                         {
                             "objective": objective.name,
                             "optimizer": optimizer.name,
-                            "theta0": theta0,
-                            "theta": None,
+                            "expID": expID,
                             "epochs": None,
                             "cpu_time": None,
                             "loss": None,
@@ -125,10 +134,10 @@ for objective in objectives:
 
 results = pd.DataFrame(
     results_,
-    columns=["objective", "optimizer", "theta0", "theta", "epochs", "cpu_time", "loss"],
+    columns=["objective", "optimizer", "expID", "epochs", "cpu_time", "loss"],
 )
 
 id = 0
-while Path(f"data/experiments-{id}.csv").exists():
+while Path(f"data/experiments-dim{DIM}-{id}.csv").exists():
     id += 1
-results.to_csv(f"data/experiments-{id}.csv")
+results.to_csv(f"data/experiments-dim{DIM}-{id}.csv")
