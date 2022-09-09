@@ -12,3 +12,8 @@ def rademacher(size):
 
 def gaussian(size):
     return np.random.normal(size=size)
+
+
+def circle(size):
+    ret = np.random.normal(size=size)
+    ret = np.sqrt(size) * ret / np.linalg.norm(ret)

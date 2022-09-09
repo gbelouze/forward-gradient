@@ -100,29 +100,6 @@ class Optim:
         return OptimContextManager(self.updater, f_df)
 
 
-class Scheduler(abc.ABC):
-    """Abstract base class for descent schedulers"""
-
-    def __init__(self, lr: float, epochs: int):
-        self.lr0_ = lr
-        self.lr_ = lr
-        self.epochs = epochs
-
-    def reset(self):
-        self.lr_ = self.lr0_
-
-    @property
-    @abc.abstractmethod
-    def lr(self):
-        """Get the current learning rate"""
-        pass
-
-    @abc.abstractmethod
-    def epoch(self):
-        """Signifies the end of an epoch"""
-        pass
-
-
 class SgdUpdater(OptimUpdater):
     def __init__(self, config: OptimConfig):
         self.config = config
@@ -134,6 +111,9 @@ class SgdUpdater(OptimUpdater):
             self.m = np.zeros(grad.shape)
         if self.config.clip:
             grad[np.abs(grad) > 1] = np.sign(grad[np.abs(grad) > 1])
+
+        assert self.m is not None  # make mypy happy
+
         self.m = (1 - self.config.momentum) * self.m + self.config.momentum * grad
 
     def dtheta(self) -> np.ndarray:
@@ -164,6 +144,9 @@ class AdamUpdater(OptimUpdater):
             self.v = np.zeros(grad.shape)
         if self.config.clip:
             grad[np.abs(grad) > 1] = np.sign(grad[np.abs(grad) > 1])
+
+        assert self.m is not None
+        assert self.v is not None  # make mypy happy
 
         self.epoch += 1
         self.m = self.beta1 * self.m + (1 - self.beta1) * grad
@@ -203,6 +186,9 @@ class AdaBeliefUpdater(OptimUpdater):
         if self.config.clip:
             grad[np.abs(grad) > 1] = np.sign(grad[np.abs(grad) > 1])
 
+        assert self.m is not None
+        assert self.v is not None  # make mypy happy
+
         self.epoch += 1
         self.m = self.beta1 * self.m + (1 - self.beta1) * grad
         self.v = self.beta2 * self.v + (1 - self.beta2) * (grad - self.m) ** 2
@@ -232,7 +218,7 @@ def AdaBelief(config: OptimConfig) -> Optim:
     return Optim(config, AdaBeliefUpdater(config))
 
 
-def descent_fixed_cost(
+def descent(
     f: Optimizable,
     theta0: np.ndarray,
     target: float,
@@ -240,206 +226,23 @@ def descent_fixed_cost(
     lr: float,
     max_epochs: int = 1_000,
 ):
+    """Performs gradient descent until a loss lower than [target] is found,
+    or [max_epochs] iterations have passed.
+    If [target] is negative, performs [max_epochs] iterations no matter what"""
     theta = theta0.copy()
+    best_theta, best_loss = theta.copy(), None
     with optim.optimize(f) as optf:
         epoch = 0
-        while (loss := optf.loss(theta)) > target:
+        loss0 = optf.loss(theta)
+        best_loss = loss0
+        while best_loss > target:
+            loss = optf.loss(theta)
+            if best_loss is None or loss < best_loss:
+                best_theta, best_loss = theta.copy(), loss
             theta -= lr * optf.dtheta()
             epoch += 1
             if epoch >= max_epochs:
                 break
-            if loss - target > 1e5:
+            if target > 0 and loss - target > 1e5:
                 raise DivergenceError
-        return epoch, theta, optf.loss(theta)
-
-
-def _fakeHook(epoch, x, fx, dfx, **kwargs):
-    pass
-
-
-class _Sgd:
-    def __init__(
-        self,
-        f_df,
-        lr=0.01,
-        epochs=1,
-        momentum=1,
-        decay=0,
-        decay_offset=0,
-        threshold=False,
-    ):
-        self.f_df = f_df
-
-        self.decay = decay
-        self.decay_offset = decay_offset
-        self.lr = lr
-        self.epochs = epochs
-        self.momentum = momentum
-        self.threshold = threshold
-
-    def run(self, x0, data=None, epoch_hook=None):
-        epoch_hook = epoch_hook if epoch_hook is not None else _fakeHook
-        f_df = self.f_df if data is None else (lambda x: self.f_df(x, data))
-
-        x = x0.copy()
-        m = np.zeros(x.shape)
-        epoch_hook(0, x, *f_df(x))
-        for epoch in range(1, self.epochs + 1):
-            fx, dfx = f_df(x)
-            m = (1 - self.momentum) * m + self.momentum * dfx
-            lr_ = self.lr / np.sqrt(max(1, (epoch - self.decay_offset) * self.decay))
-            if self.threshold:
-                m[np.abs(m) > 1] = np.sign(m[np.abs(m) > 1])
-            x = x - lr_ * m
-            epoch_hook(epoch, x, fx, m)
-        return x
-
-
-class _Adam:
-
-    beta1 = 0.9
-    beta2 = 0.999
-    epsilon = 1e-8
-
-    def __init__(
-        self, f_df, lr=0.1, epochs=1, decay=0, decay_offset=0, threshold=False
-    ):
-        self.f_df = f_df
-
-        self.lr = lr
-        self.epochs = epochs
-        self.decay = decay
-        self.decay_offset = decay_offset
-        self.threshold = threshold
-
-    def run(self, x0, data=None, epoch_hook=None):
-        epoch_hook = epoch_hook if epoch_hook is not None else _fakeHook
-
-        f_df = self.f_df if data is None else (lambda x: self.f_df(x, data))
-
-        x = x0.copy()
-        m = np.zeros(x.shape)
-        v = np.zeros(x.shape)
-
-        epoch_hook(0, x.copy(), *f_df(x))
-        for epoch in range(1, self.epochs + 1):
-            fx, dfx = f_df(x)
-            m = self.beta1 * m + (1 - self.beta1) * dfx
-            v = self.beta2 * v + (1 - self.beta2) * dfx**2
-            mhat = m / (1 - self.beta1**epoch)
-            vhat = v / (1 - self.beta2**epoch)
-            lr_ = self.lr / np.sqrt(max(1, (epoch - self.decay_offset) * self.decay))
-            x -= lr_ / (np.sqrt(vhat) + self.epsilon) * mhat
-
-            epoch_hook(epoch, x.copy(), fx, m)
-        return x.copy()
-
-
-class _AdaBelief:
-    """Adam like optimizer, stabilised for noisy gradients.
-    See https://proceedings.neurips.cc/paper/2020/hash/
-    d9d4f495e875a2e075a1a4a6e1b9770f-Abstract.html"""
-
-    beta1 = 0.9
-    beta2 = 0.999
-    epsilon = 1e-8
-
-    def __init__(self, f_df, lr=0.1, epochs=1):
-        self.f_df = f_df
-
-        self.lr = lr
-        self.epochs = epochs
-
-    def run(self, x0, data=None, lr=None, epochs=None, epoch_hook=None):
-        epoch_hook = epoch_hook if epoch_hook is not None else _fakeHook
-        lr = lr if lr is not None else self.lr
-        epochs = epochs if epochs is not None else self.epochs
-
-        f_df = self.f_df if data is None else (lambda x: self.f_df(x, data))
-
-        x = x0.copy()
-        m = np.zeros(x.shape)
-        s = np.zeros(x.shape)
-
-        epoch_hook(0, x.copy(), *f_df(x))
-        for epoch in range(1, epochs + 1):
-            fx, dfx = f_df(x)
-            m = self.beta1 * m + (1 - self.beta1) * dfx
-            s = self.beta2 * s + (1 - self.beta2) * (dfx - m) ** 2 + self.epsilon
-            mhat = m / (1 - self.beta1**epoch)
-            shat = s / (1 - self.beta2**epoch)
-            x -= lr / (np.sqrt(shat) + self.epsilon) * mhat
-
-            epoch_hook(epoch, x.copy(), fx, m)
-        return x.copy()
-
-
-class _AdaForward:
-
-    beta1 = 0.9
-    beta2 = 0.999
-    epsilon = 1e-8
-
-    def __init__(self, f, lr=0.01, epochs=1):
-
-        self.f_df = df_fwd(f, self.sampler)
-        self.mv_hat = None
-        self.lr = lr
-        self.epochs = epochs
-
-    def sampler(self, _size):
-        assert self.mv_hat is not None
-        return np.random.normal(loc=self.mv_hat)
-
-    def run(self, x0, data=None, lr=None, epochs=None, epoch_hook=None):
-        epoch_hook = epoch_hook if epoch_hook is not None else _fakeHook
-        lr = lr if lr is not None else self.lr
-        epochs = epochs if epochs is not None else self.epochs
-
-        f_df = self.f_df if data is None else (lambda x: self.f_df(x, data))
-
-        x = x0.copy()
-        m = np.zeros(x.shape)
-        v = np.zeros(x.shape)
-        self.mv_hat = np.zeros(x.shape)
-
-        epoch_hook(0, x.copy(), *f_df(x))
-        for epoch in range(1, epochs + 1):
-            fx, dfx = f_df(x)
-            m = self.beta1 * m + (1 - self.beta1) * dfx
-            v = self.beta2 * v + (1 - self.beta2) * dfx**2
-            mhat = m / (1 - self.beta1**epoch)
-            vhat = v / (1 - self.beta2**epoch)
-            self.mv_hat = mhat / (np.sqrt(vhat) + self.epsilon)
-            x -= lr * self.mv_hat
-
-            epoch_hook(epoch, x.copy(), fx, m)
-        return x.copy()
-
-
-def sgd(**kwargs):
-    def ret(*args, **kwargs_):
-        return _Sgd(*args, **kwargs, **kwargs_)
-
-    return ret
-
-
-def adam(**kwargs):
-    def ret(*args, **kwargs_):
-        return _Adam(*args, **kwargs, **kwargs_)
-
-    return ret
-
-
-def adabelief(**kwargs):
-    def ret(*args, **kwargs_):
-        return _AdaBelief(*args, **kwargs, **kwargs_)
-
-    return ret
-
-
-def adaforward(**kwargs):
-    def ret(*args, **kwargs_):
-        return _AdaForward(*args, **kwargs, **kwargs_)
-
-    return ret
+        return epoch, best_theta, best_loss, loss0
