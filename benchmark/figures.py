@@ -5,7 +5,7 @@ import click
 import numpy as np
 import pandas as pd  # type: ignore
 
-image_path = Path(__file__).joinpath("../images")
+image_path = Path(__file__).parent.joinpath("images")
 
 
 def get_experiment_files(kind: str) -> dict[int, list[Path]]:
