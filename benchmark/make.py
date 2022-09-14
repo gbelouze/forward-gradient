@@ -52,6 +52,7 @@ def sample_in_domain(domain):
 
 
 def make(dim, n_initialisations, epsilon, max_epochs, kind):
+    assert kind in ["accuracy", "performance"]
     objectives = [f(dim) for f in get_functions(dim, multimodal=False)]
     results_ = []
 
@@ -87,12 +88,18 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
                                 "loss0": loss0,
                             }
                         )
-                        if epochs >= max_epochs:
-                            print(
-                                "\t", optimizer.name, "❌⏳", f"[final loss = {loss:.2f}]"
-                            )
-                        else:
+                        if kind == "accuracy":
                             print("\t", optimizer.name, "✔️")
+                        elif kind == "performance":
+                            if epochs >= max_epochs:
+                                print(
+                                    "\t",
+                                    optimizer.name,
+                                    "❌⏳",
+                                    f"[final loss = {loss:.2f}]",
+                                )
+                            else:
+                                print("\t", optimizer.name, "✔️")
 
                     except optim.DivergenceError:
                         results_.append(
@@ -164,8 +171,8 @@ def performance(dim, n_initialisations, epsilon, max_epochs):
 @click.option(
     "--n-epochs", default=10_000, help="Number of epochs to run each test for."
 )
-def accuracy(dim, n_initialisations, max_epochs):
-    make(dim, n_initialisations, max_epochs, epsilon=-1, kind="accuracy")
+def accuracy(dim, n_initialisations, n_epochs):
+    make(dim, n_initialisations, max_epochs=n_epochs, epsilon=-1, kind="accuracy")
 
 
 if __name__ == "__main__":
