@@ -11,7 +11,7 @@ from benchfunctions import get_functions
 
 from forward import optim
 
-data_path = Path(__file__).parent.joinpath("data")
+data_path = Path(__file__).parent.parent.joinpath("data")
 
 
 @dataclass

@@ -20,7 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
-requires-python = ">=3.5"
+requires-python = ">=3.9" # necessary for type hints
 license = {"file" = "LICENSE"}
 dynamic = ["version", "description"]
 

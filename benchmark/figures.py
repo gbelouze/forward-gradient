@@ -5,7 +5,7 @@ import click
 import numpy as np
 import pandas as pd  # type: ignore
 
-image_path = Path(__file__).parent.joinpath("images")
+image_path = Path(__file__).parent.parent.joinpath("images")
 
 
 def get_experiment_files(kind: str) -> dict[int, list[Path]]:
@@ -95,8 +95,8 @@ def performance_profile(df: pd.DataFrame):
 
 
 @click.command()
-@click.option(
-    "--task", type=click.Choice(["performance", "accuracy"], case_sensitive=False)
+@click.argument(
+    "task", type=click.Choice(["performance", "accuracy"], case_sensitive=False)
 )
 def main(task):
     import matplotlib.pyplot as plt  # type: ignore
@@ -120,7 +120,7 @@ def main(task):
         return label
 
     if task == "performance":
-        dimToDf = read_experiment_files(get_experiment_files(kind="profile"))
+        dimToDf = read_experiment_files(get_experiment_files(kind="performance"))
         fig, axs = plt.subplots(
             1,
             len(dimToDf),
