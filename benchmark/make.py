@@ -57,7 +57,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
     results_ = []
 
     expID = 0
-    for objective in objectives[:5]:
+    for objective in objectives:
         for _ in range(n_initialisations):
             print(objective.name)
             theta_star, f_star = objective.get_global_minimum()

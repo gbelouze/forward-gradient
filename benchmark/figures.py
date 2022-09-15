@@ -34,7 +34,7 @@ def accuracy_profile(df: pd.DataFrame):
     M = 10
     if any(df.loss < 0):
         raise ValueError("Negative loss found in experiments")
-    df.loc[df.loss == 0, "loss"] = np.exp(-M)
+    df.loc[df.loss == 0, "loss"] = np.exp(-2 * M)
     df["accuracy"] = -np.log(df.loss) + np.log(df.loss0)
     df.loc[df.accuracy > M, "accuracy"] = M
 
@@ -53,9 +53,10 @@ def accuracy_profile(df: pd.DataFrame):
     def ap(optimizer):
         """Accuracy profile"""
         values = sorted(
-            experiments.xs(optimizer, level="optimizer").MeanAccuracy.values
+            experiments.xs(optimizer, level="optimizer").MeanAccuracy.values,
+            reverse=True,
         )
-        taus = sorted(list(set(values) | set([0, max_tau])), reverse=True)
+        taus = sorted(list(set(values) | set([0, max_tau])))
         total = np.zeros(len(taus))
         for i, tau in enumerate(taus):
             for value in values:
