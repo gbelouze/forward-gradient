@@ -2,24 +2,27 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This repository contains the code used for benchmarking [forward gradients](https://arxiv.org/abs/2202.08587) against canonical test functions. This was used in my research work at [Lokad](https://www.lokad.com/home) as part of my end-of-study internship for the [MVA master](https://www.master-mva.com/).
+This repository hosts the code used for benchmarking [forward gradients](https://arxiv.org/abs/2202.08587) against canonical test functions, associated to [this research paper](https://arxiv.org/abs/2209.06302). This was used in my research work at [Lokad](https://www.lokad.com/home) as part of my end-of-study internship for the [MVA master](https://www.master-mva.com/).
 
 ## Usage
 
 We recommend you use a virtual environment. To install, run
 
 ```
-$ pip install [path-to-forward-repository]
+$ cd [path-to-forward-repository]
+$ pip install -e .
 ```
 
-Then the data for the experiment can be generated with
+Then the data and performance profiles for the experiment can be generated with
 ```
-$ python3 benchmark/make.py
+$ python3 benchmark/make.py performance
+$ python3 benchmark/figures.py performance
 ```
 
-And the figures with
+You can also generate accuracy profiles, not included in the paper, with
 ```
-$ python3 benchmark/figures.py
+$ python3 benchmark/make.py accuracy
+$ python3 benchmark/figures.py accuracy
 ```
 
 ## Acknowledgments
