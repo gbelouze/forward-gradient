@@ -32,8 +32,20 @@ def read_experiment_files(dimToPaths: dict[int, list[Path]]) -> dict[int, pd.Dat
 
 def accuracy_profile(df: pd.DataFrame):
     M = 10
+    if any(df.loss < 0):
+        raise ValueError("Negative loss found in experiments")
+    df.loc[df.loss == 0, "loss"] = np.exp(-M)
     df["accuracy"] = -np.log(df.loss) + np.log(df.loss0)
     df.loc[df.accuracy > M, "accuracy"] = M
+
+    experiment_index = ["expID", "optimizer"]
+    experiments = pd.DataFrame([], index=df.groupby(experiment_index).groups.keys())
+    experiments.index.set_names(experiment_index, inplace=True)
+    experiments["MeanAccuracy"] = (
+        experiments.join(df.set_index(experiment_index))
+        .groupby(experiment_index)
+        .accuracy.mean()
+    )
 
     n_experiments = len(df.groupby(["expID"]).groups)
     max_tau = M
@@ -41,7 +53,7 @@ def accuracy_profile(df: pd.DataFrame):
     def ap(optimizer):
         """Accuracy profile"""
         values = sorted(
-            df.loc[df.optimizer == optimizer].accuracy.to_numpy(), reverse=True
+            experiments.xs(optimizer, level="optimizer").MeanAccuracy.values
         )
         taus = sorted(list(set(values) | set([0, max_tau])), reverse=True)
         total = np.zeros(len(taus))

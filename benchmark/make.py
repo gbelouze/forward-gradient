@@ -57,7 +57,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
     results_ = []
 
     expID = 0
-    for objective in objectives:
+    for objective in objectives[:5]:
         for _ in range(n_initialisations):
             print(objective.name)
             theta_star, f_star = objective.get_global_minimum()
@@ -84,8 +84,8 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
                                 "expID": expID,
                                 "epochs": epochs,
                                 "cpu_time": cpu_time,
-                                "loss": loss,
-                                "loss0": loss0,
+                                "loss": loss - f_star,
+                                "loss0": loss0 - f_star,
                             }
                         )
                         if kind == "accuracy":
@@ -96,7 +96,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
                                     "\t",
                                     optimizer.name,
                                     "❌⏳",
-                                    f"[final loss = {loss:.2f}]",
+                                    f"[final loss = {loss - f_star:.2f}]",
                                 )
                             else:
                                 print("\t", optimizer.name, "✔️")
