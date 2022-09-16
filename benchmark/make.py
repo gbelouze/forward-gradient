@@ -58,6 +58,9 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
 
     expID = 0
     for objective in objectives:
+        domain = None
+        if objective.name == "Ridge":
+            domain = objective.input_domain
         for _ in range(n_initialisations):
             print(objective.name)
             theta_star, f_star = objective.get_global_minimum()
@@ -74,6 +77,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
                             optim=optimizer.optim,
                             lr=0.01,
                             max_epochs=max_epochs,
+                            domain=domain,
                         )
                         t2 = time.process_time()
                         cpu_time = t2 - t1
@@ -122,6 +126,15 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
             "optimizer",
             "expID",
             "epochs",
+            "cpu_time",
+            "loss",
+            "loss0",
+        ]
+        if kind == "performance"
+        else [
+            "objective",
+            "optimizer",
+            "expID",
             "cpu_time",
             "loss",
             "loss0",

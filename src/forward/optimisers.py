@@ -1,5 +1,6 @@
 import abc
 from dataclasses import dataclass
+from typing import Optional
 
 import autograd.numpy as np  # type: ignore
 
@@ -218,6 +219,14 @@ def AdaBelief(config: OptimConfig) -> Optim:
     return Optim(config, AdaBeliefUpdater(config))
 
 
+def project(domain: np.ndarray, theta: np.ndarray):
+    under = theta < domain[0, :]
+    over = theta > domain[1, :]
+    theta[under] = domain[0, under]
+    theta[over] = domain[1, over]
+    return theta
+
+
 def descent(
     f: Optimizable,
     theta0: np.ndarray,
@@ -225,6 +234,7 @@ def descent(
     optim: Optim,
     lr: float,
     max_epochs: int = 1_000,
+    domain: Optional[np.ndarray] = None,
 ):
     """Performs gradient descent until a loss lower than [target] is found,
     or [max_epochs] iterations have passed.
@@ -240,6 +250,8 @@ def descent(
             if best_loss is None or loss < best_loss:
                 best_theta, best_loss = theta.copy(), loss
             theta -= lr * optf.dtheta()
+            if domain is not None:
+                theta = project(domain, theta)
             epoch += 1
             if epoch >= max_epochs:
                 break
