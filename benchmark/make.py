@@ -59,7 +59,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
     expID = 0
     for objective in objectives:
         domain = None
-        if objective.name == "Ridge":
+        if objective.strict_domain:
             domain = objective.input_domain
         for _ in range(n_initialisations):
             print(objective.name)
@@ -79,6 +79,10 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
                             max_epochs=max_epochs,
                             domain=domain,
                         )
+                        if loss - f_star < -1e-10:
+                            print(loss, f_star)
+                            print(theta_star, _theta)
+                            assert False
                         t2 = time.process_time()
                         cpu_time = t2 - t1
                         results_.append(

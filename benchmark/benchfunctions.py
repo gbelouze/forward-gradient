@@ -48,6 +48,7 @@ class Thevenot:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -97,6 +98,7 @@ class Ackley:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -143,6 +145,7 @@ class AckleyN2:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -177,8 +180,8 @@ class AckleyN3:
     latex_formula_dimension = r"d=2"
     latex_formula_input_domain = r"x \in [-32, 32], y \in [-32, 32]"
     latex_formula_global_minimum = (
-        r"f(x, y)\approx-195.629028238419, at$$ $$x=\pm0.682584587365898,"
-        r" and$$ $$ y=-0.36075325513719"
+        r"f(x, y)\approx-186.4112127, at$$ $$x=\approx0.0000000008,"
+        r" and$$ $$ y\approx-0.0068"
     )
     continuous = False
     convex = False
@@ -187,6 +190,7 @@ class AckleyN3:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -203,7 +207,7 @@ class AckleyN3:
         return {}
 
     def get_global_minimum(self):
-        X = np.array([0.682584587365898, -0.36075325513719])
+        X = np.array([8.27712029e-10, -6.77344009e-03])
         return (X, self(X))
 
     def __call__(self, X):
@@ -236,6 +240,7 @@ class AckleyN4:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -252,7 +257,7 @@ class AckleyN4:
         return {}
 
     def get_global_minimum(self):
-        print("WARNING ! Is only is available for d=2")
+        assert self.d == 2, "WARNING ! Is only is available for d=2"
         X = np.array([-1.51, -0.755])
         return (X, self(X))
 
@@ -282,6 +287,7 @@ class Adjiman:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -327,6 +333,7 @@ class AlpineN1:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -370,6 +377,7 @@ class AlpineN2:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -411,6 +419,7 @@ class Bartels:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -452,6 +461,7 @@ class Beale:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -502,6 +512,7 @@ class Bird:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -518,7 +529,7 @@ class Bird:
         return {}
 
     def get_global_minimum(self):
-        X = np.array([4.70104, 3.15294], [-1.58214, -3.13024])
+        X = np.array([[4.70104, 3.15294], [-1.58214, -3.13024]])
         return (X, [self(x) for x in X])
 
     def __call__(self, X):
@@ -544,6 +555,7 @@ class BohachevskyN1:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -591,6 +603,7 @@ class BohachevskyN2:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -637,6 +650,7 @@ class BohachevskyN3:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -683,6 +697,7 @@ class Booth:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -727,6 +742,7 @@ class Branin:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -791,6 +807,7 @@ class Brent:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -837,6 +854,7 @@ class Brown:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -879,6 +897,7 @@ class BukinN6:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -926,6 +945,7 @@ class Colville:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -978,6 +998,7 @@ class CrossInTray:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1037,6 +1058,7 @@ class DeJongN5:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1091,6 +1113,7 @@ class DeckkersAarts:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1136,6 +1159,7 @@ class DixonPrice:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1181,6 +1205,7 @@ class DropWave:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1224,6 +1249,7 @@ class Easom:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1265,6 +1291,7 @@ class EggCrate:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1309,6 +1336,7 @@ class EggHolder:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1354,6 +1382,7 @@ class Exponential:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1395,6 +1424,7 @@ class Forrester:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1439,6 +1469,7 @@ class GoldsteinPrice:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1485,6 +1516,7 @@ class GramacyLee:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1531,6 +1563,7 @@ class Griewank:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1580,6 +1613,7 @@ class HappyCat:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1627,6 +1661,7 @@ class Himmelblau:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1675,6 +1710,7 @@ class HolderTable:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1728,6 +1764,7 @@ class Keane:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1775,6 +1812,7 @@ class Langermann:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1828,6 +1866,7 @@ class Leon:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1871,6 +1910,7 @@ class LevyN13:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1916,6 +1956,7 @@ class Matyas:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -1957,6 +1998,7 @@ class McCormick:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2003,6 +2045,7 @@ class Michalewicz:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2052,6 +2095,7 @@ class Periodic:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2098,6 +2142,7 @@ class PermZeroDBeta:
     multimodal = False
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2124,18 +2169,11 @@ class PermZeroDBeta:
 
     def f(self, X):
         d = X.shape[0]
+        j = np.arange(1, d + 1)
         res = np.sum(
             [
-                (
-                    np.sum(
-                        [
-                            ((j + 1) + self.beta * (X[j] ** (i + 1) - j ** (i + 1)))
-                            for j in range(d)
-                        ]
-                    )
-                )
-                ** 2
-                for i in range(d)
+                np.sum((j + self.beta) * (X**i - (1 / j) ** i)) ** 2
+                for i in range(1, d + 1)
             ]
         )
         return res
@@ -2159,6 +2197,7 @@ class PermDBeta:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2177,7 +2216,7 @@ class PermDBeta:
 
     def get_global_minimum(self):
         d = self.d
-        X = np.array([1 / (i + 1) for i in range(d)])
+        X = np.arange(1, d)
         return (X, self(X))
 
     def __call__(self, X):
@@ -2210,6 +2249,7 @@ class Powell:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2254,6 +2294,7 @@ class Qing:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2307,6 +2348,7 @@ class Quartic:
     multimodal = True
     randomized_term = True
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2351,6 +2393,7 @@ class Rastrigin:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2398,6 +2441,7 @@ class Ridge:
     multimodal = False
     randomized_term = False
     parametric = True
+    strict_domain = True
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2446,6 +2490,7 @@ class Rosenbrock:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2493,6 +2538,7 @@ class RotatedHyperEllipsoid:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2543,6 +2589,7 @@ class Salomon:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2588,6 +2635,7 @@ class SchafferN1:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2633,6 +2681,7 @@ class SchafferN2:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2680,6 +2729,7 @@ class SchafferN3:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2715,11 +2765,11 @@ class SchafferN3:
 class SchafferN4:
     name = "Schaffer N. 4"
     latex_formula = (
-        r"f(x, y)=0.5 + \frac{sin^2(cos(|x^2-y^2|))-0.5}{(1+0.001(x^2+y^2))^2}"
+        r"f(x, y)=0.5 + \frac{cos^2(sin(|x^2-y^2|))-0.5}{(1+0.001(x^2+y^2))^2}"
     )
     latex_formula_dimension = r"d=2"
     latex_formula_input_domain = r"x \in [-100, 100], y \in [-100, 100]"
-    latex_formula_global_minimum = r"f(0, 1.253115)\approx0.292579"
+    latex_formula_global_minimum = r"f(0, 1.25313183)\approx 0.29257863203598"
     continuous = True
     convex = False
     separable = False
@@ -2727,6 +2777,7 @@ class SchafferN4:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2743,7 +2794,7 @@ class SchafferN4:
         return {}
 
     def get_global_minimum(self):
-        X = np.array([0, 1.253115])
+        X = np.array([0, 1.25313183])
         return (X, self(X))
 
     def __call__(self, X):
@@ -2753,7 +2804,7 @@ class SchafferN4:
         x, y = X
         res = (
             0.5
-            + (np.cos(np.sin(np.abs(x**2 + y**2))) ** 2 - 0.5)
+            + (np.cos(np.sin(np.abs(x**2 - y**2))) ** 2 - 0.5)
             / (1 + 0.001 * (x**2 + y**2)) ** 2
         )
         return res
@@ -2774,6 +2825,7 @@ class Schwefel:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2821,6 +2873,7 @@ class Schwefel2_20:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2867,6 +2920,7 @@ class Schwefel2_21:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2913,6 +2967,7 @@ class Schwefel2_22:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -2959,6 +3014,7 @@ class Schwefel2_23:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3010,6 +3066,7 @@ class Shekel:
     multimodal = True
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3086,6 +3143,7 @@ class Shubert:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3134,6 +3192,7 @@ class ShubertN3:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3179,6 +3238,7 @@ class ShubertN4:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3224,6 +3284,7 @@ class Sphere:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3270,6 +3331,7 @@ class StyblinskiTank:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3316,6 +3378,7 @@ class SumSquares:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3359,6 +3422,7 @@ class ThreeHump:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3404,6 +3468,7 @@ class Trid:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3447,6 +3512,7 @@ class Wolfe:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3490,6 +3556,7 @@ class XinSheYang:
     multimodal = True
     randomized_term = True
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3536,6 +3603,7 @@ class XinSheYangN2:
     multimodal = True
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3582,6 +3650,7 @@ class XinSheYangN3:
     multimodal = False
     randomized_term = False
     parametric = True
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3631,6 +3700,7 @@ class XinSheYangN4:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3679,6 +3749,7 @@ class Zakharov:
     multimodal = False
     randomized_term = False
     parametric = False
+    strict_domain = False
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -3709,7 +3780,10 @@ class Zakharov:
         return res
 
 
-available_functions = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+available_functions = {
+    fname: f
+    for (fname, f) in inspect.getmembers(sys.modules[__name__], inspect.isclass)
+}
 
 
 def get_functions(
@@ -3723,7 +3797,7 @@ def get_functions(
 ):
     return [
         f
-        for _fname, f in available_functions
+        for f in available_functions.values()
         if f.is_dim_compatible(d)
         if ((continuous is None) or (f.continuous == continuous))
         if ((convex is None) or (f.convex == convex))
