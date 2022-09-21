@@ -159,7 +159,6 @@ class AckleyN2:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -196,14 +195,14 @@ class AckleyN3:
         ), "The dimension d must be None or a positive integer"
         return d == 2
 
-    def __init__(self, d=None):
+    def __init__(self, d):
+        self.d = d
         self.input_domain = np.array([[-32, 32], [-32, 32]])
 
     def get_param(self):
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0.682584587365898, -0.36075325513719])
         return (X, self(X))
 
@@ -245,14 +244,14 @@ class AckleyN4:
         ), "The dimension d must be None or a positive integer"
         return (d is None) or (d > 0)
 
-    def __init__(self, d=None):
+    def __init__(self, d):
+        self.d = d
         self.input_domain = np.array([[-35, 35] for _ in range(d)])
 
     def get_param(self):
         return {}
 
     def get_global_minimum(self):
-        self.d
         print("WARNING ! Is only is available for d=2")
         X = np.array([-1.51, -0.755])
         return (X, self(X))
@@ -428,7 +427,6 @@ class Bartels:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -470,7 +468,6 @@ class Beale:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([3, 0.5])
         return (X, self(X))
 
@@ -521,7 +518,6 @@ class Bird:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([4.70104, 3.15294], [-1.58214, -3.13024])
         return (X, [self(x) for x in X])
 
@@ -564,7 +560,6 @@ class BohachevskyN1:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -612,7 +607,6 @@ class BohachevskyN2:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -659,7 +653,6 @@ class BohachevskyN3:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -706,7 +699,6 @@ class Booth:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([1.0, 3.0])
         return (X, self(X))
 
@@ -773,7 +765,6 @@ class Branin:
         }
 
     def get_global_minimum(self):
-        self.d
         X = np.array([[-np.pi, 12.275], [np.pi, 2.275], [9.42478, 2.475]])
         return (X, [self(x) for x in X])
 
@@ -816,7 +807,6 @@ class Brent:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([-10, -10])
         return (X, self(X))
 
@@ -905,7 +895,6 @@ class BukinN6:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([-10.0, 1.0])
         return (X, self(X))
 
@@ -953,7 +942,6 @@ class Colville:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([1, 1, 1, 1])
         return (X, self(X))
 
@@ -1006,7 +994,6 @@ class CrossInTray:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array(
             [
                 [-1.349406685353340, +1.349406608602084],
@@ -1071,7 +1058,6 @@ class DeJongN5:
         return {"a": self.a}
 
     def get_global_minimum(self):
-        self.d
         X = self.a[0]
         return (X, self(X))
 
@@ -1121,7 +1107,6 @@ class DeckkersAarts:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([[0, -15], [0, 15]])
         return (X, [self(x) for x in X])
 
@@ -1212,7 +1197,6 @@ class DropWave:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -1256,7 +1240,6 @@ class Easom:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([np.pi, np.pi])
         return (X, self(X))
 
@@ -1298,7 +1281,6 @@ class EggCrate:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -1343,7 +1325,6 @@ class EggHolder:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([512, 404.2319])
         return (X, self(X))
 
@@ -1430,7 +1411,6 @@ class Forrester:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0.757249])
         return (X, self(X))
 
@@ -1475,7 +1455,6 @@ class GoldsteinPrice:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, -1])
         return (X, self(X))
 
@@ -1522,7 +1501,6 @@ class GramacyLee:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0.548563444114526])
         return (X, self(X))
 
@@ -1665,7 +1643,6 @@ class Himmelblau:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array(
             [
                 [3, 2],
@@ -1714,7 +1691,6 @@ class HolderTable:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array(
             [
                 [-8.05502, 9.66459],
@@ -1768,7 +1744,6 @@ class Keane:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([[1.393249070031784, 0], [0, 1.393249070031784]])
         return (X, [self(x) for x in X])
 
@@ -1869,7 +1844,6 @@ class Leon:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([1, 1])
         return (X, self(X))
 
@@ -1913,7 +1887,6 @@ class LevyN13:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([1, 1])
         return (X, self(X))
 
@@ -1959,7 +1932,6 @@ class Matyas:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -2001,7 +1973,6 @@ class McCormick:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([-0.547, -1.547])
         return (X, self(X))
 
@@ -2633,7 +2604,6 @@ class SchafferN1:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -2679,7 +2649,6 @@ class SchafferN2:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -2727,7 +2696,6 @@ class SchafferN3:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 1.253114962205510])
         return (X, self(X))
 
@@ -2775,7 +2743,6 @@ class SchafferN4:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 1.253115])
         return (X, self(X))
 
@@ -3083,7 +3050,6 @@ class Shekel:
         return {"m": self.m, "C": self.C, "beta": self.beta}
 
     def get_global_minimum(self):
-        self.d
         X = self.C[0]
         return (X, self(X))
 
@@ -3139,7 +3105,6 @@ class Shubert:
         return {}
 
     def get_global_minimum(self):
-        self.d
         return None
 
     def __call__(self, X):
@@ -3188,7 +3153,6 @@ class ShubertN3:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([-7.4, -7.4])
         return (X, self(X))
 
@@ -3234,7 +3198,6 @@ class ShubertN4:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([4.85, 4.85])
         return (X, self(X))
 
@@ -3412,7 +3375,6 @@ class ThreeHump:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0])
         return (X, self(X))
 
@@ -3501,7 +3463,6 @@ class Wolfe:
         return {}
 
     def get_global_minimum(self):
-        self.d
         X = np.array([0, 0, 0])
         return (X, self(X))
 
