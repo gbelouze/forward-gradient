@@ -3161,11 +3161,8 @@ class Shubert:
         return self.f(X)
 
     def f(self, X):
-        d = X.shape[0]
-        for i in range(0, d):
-            res = np.prod(
-                np.sum([i * np.cos((j + 1) * X[i] + j) for j in range(1, 5 + 1)])
-            )
+        j = np.arange(1, 6)[None, :]
+        res = np.cos((j + 1) * X[:, None] + j).sum(axis=1).prod()
         return res
 
 
