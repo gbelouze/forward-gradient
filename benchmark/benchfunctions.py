@@ -258,7 +258,7 @@ class AckleyN4:
 
     def get_global_minimum(self):
         assert self.d == 2, "WARNING ! Is only is available for d=2"
-        X = np.array([-1.51, -0.755])
+        X = np.array([1.50872976, -0.69893072])
         return (X, self(X))
 
     def __call__(self, X):
@@ -287,7 +287,7 @@ class Adjiman:
     multimodal = True
     randomized_term = False
     parametric = False
-    strict_domain = False
+    strict_domain = True
 
     @classmethod
     def is_dim_compatible(cls, d):
@@ -298,15 +298,13 @@ class Adjiman:
 
     def __init__(self, d):
         self.d = d
-        self.input_domain = np.array([[-1, 2], [-1, 1]])
+        self.input_domain = np.array([[-5, 5], [-1, 2]])
 
     def get_param(self):
         return {}
 
     def get_global_minimum(self):
-        d = self.d
-        X = np.array([1 / (i + 1) for i in range(d)])
-        X = np.array([0, 0])
+        X = np.array([5, 0])
         return (X, self(X))
 
     def __call__(self, X):
@@ -458,7 +456,7 @@ class Beale:
     convex = False
     separable = False
     differentiable = True
-    multimodal = True
+    multimodal = False
     randomized_term = False
     parametric = False
     strict_domain = False
@@ -489,7 +487,7 @@ class Beale:
         res = (
             (1.5 - x + x * y) ** 2
             + (2.25 - x + x * y**2) ** 2
-            + (2.625 - x + x * y**3) * 2
+            + (2.625 - x + x * y**3) ** 2
         )
         return res
 
@@ -530,7 +528,7 @@ class Bird:
 
     def get_global_minimum(self):
         X = np.array([[4.70104, 3.15294], [-1.58214, -3.13024]])
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -782,7 +780,7 @@ class Branin:
 
     def get_global_minimum(self):
         X = np.array([[-np.pi, 12.275], [np.pi, 2.275], [9.42478, 2.475]])
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -1023,7 +1021,7 @@ class CrossInTray:
                 [+1.349406685353340, -1.349406608602084],
             ]
         )
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -1131,7 +1129,7 @@ class DeckkersAarts:
 
     def get_global_minimum(self):
         X = np.array([[0, -15], [0, 15]])
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -1686,7 +1684,7 @@ class Himmelblau:
                 [3.584458, -1.848126],
             ]
         )
-        return (X, [self(x) for x in X])
+        return (X, 0)
 
     def __call__(self, X):
         return self.f(X)
@@ -1735,7 +1733,7 @@ class HolderTable:
                 [8.05502, -9.66459],
             ]
         )
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -1782,7 +1780,7 @@ class Keane:
 
     def get_global_minimum(self):
         X = np.array([[1.393249070031784, 0], [0, 1.393249070031784]])
-        return (X, [self(x) for x in X])
+        return (X, min([self(x) for x in X]))
 
     def __call__(self, X):
         return self.f(X)
@@ -1834,9 +1832,7 @@ class Langermann:
         return {"m": self.m, "c": self.c, "A": self.A}
 
     def get_global_minimum(self):
-        d = self.d
-        X = np.array([0 for _ in range(d)])
-        return (X, self(X))
+        return None, None
 
     def __call__(self, X):
         return self.f(X)
@@ -2015,7 +2011,7 @@ class McCormick:
         return {}
 
     def get_global_minimum(self):
-        X = np.array([-0.547, -1.547])
+        X = np.array([-0.54719754, -1.54719754])
         return (X, self(X))
 
     def __call__(self, X):
@@ -2023,8 +2019,7 @@ class McCormick:
 
     def f(self, X):
         x, y = X
-        res = np.sin(x + y) + (x - y) ** 2 - 1.5 * x + 2.5 * y + 1
-        return res
+        return np.sin(x + y) + (x - y) ** 2 - 1.5 * x + 2.5 * y + 1
 
 
 class Michalewicz:
@@ -2311,26 +2306,23 @@ class Qing:
         return {}
 
     def get_global_minimum(self):
-        d = self.d
-        X = np.array([0 for _ in range(d)])
-        X = np.array([range(d)]) + 1
-        for i in range(d):
+        if self.d > 10:
+            # Prevent blow up in the number of critical points
+            print("Warning: not all solutions are shown")
+            return (np.arange(1, self.d + 1), 0)
+        X = np.arange(1, self.d + 1)[None, :]
+        for i in range(self.d):
             neg = X.copy()
             neg[:, i] *= -1
             X = np.vstack((X, neg))
-        return (X, [self(x) for x in X])
+        return (X, 0)
 
     def __call__(self, X):
         return self.f(X)
 
     def f(self, X):
         d = X.shape[0]
-        X1 = np.power(X, 2)
-
-        res = 0
-        for i in range(d):
-            res = res + np.power(X1[i] - (i + 1), 2)
-        return res
+        return np.sum((X**2 - np.arange(1, d + 1)) ** 2)
 
 
 class Quartic:
@@ -3163,7 +3155,7 @@ class Shubert:
         return {}
 
     def get_global_minimum(self):
-        return None
+        return (None, -186.7309)
 
     def __call__(self, X):
         return self.f(X)
