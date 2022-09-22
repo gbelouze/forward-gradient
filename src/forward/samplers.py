@@ -16,4 +16,4 @@ def gaussian(size):
 
 def circle(size):
     ret = np.random.normal(size=size)
-    ret = np.sqrt(size) * ret / np.linalg.norm(ret)
+    return np.sqrt(size) * ret / np.linalg.norm(ret)
