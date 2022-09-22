@@ -298,13 +298,13 @@ class Adjiman:
 
     def __init__(self, d):
         self.d = d
-        self.input_domain = np.array([[-5, 5], [-1, 2]])
+        self.input_domain = np.array([[-1, 2], [-1, 1]])
 
     def get_param(self):
         return {}
 
     def get_global_minimum(self):
-        X = np.array([5, 0])
+        X = np.array([2, 0.10578347])
         return (X, self(X))
 
     def __call__(self, X):
@@ -1103,7 +1103,7 @@ class DeckkersAarts:
     latex_formula = r"f(x, y) = 10^5x^2 + y^2 -(x^2 + y^2)^2 + 10^{-5}(x^2 + y^2)^4"
     latex_formula_dimension = r"d=2"
     latex_formula_input_domain = r"x \in [-20, 20], y \in [-20, 20]"
-    latex_formula_global_minimum = r"f(0, \pm15)\approx25628.906250000004"
+    latex_formula_global_minimum = r"f(0, \pm15)\approx-17320.76671"
     continuous = True
     convex = False
     separable = False

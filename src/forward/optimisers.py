@@ -220,10 +220,10 @@ def AdaBelief(config: OptimConfig) -> Optim:
 
 
 def project(domain: np.ndarray, theta: np.ndarray):
-    under = theta < domain[0, :]
-    over = theta > domain[1, :]
-    theta[under] = domain[0, under]
-    theta[over] = domain[1, over]
+    under = theta < domain[:, 0]
+    over = theta > domain[:, 1]
+    theta[under] = domain[under, 0]
+    theta[over] = domain[over, 1]
     return theta
 
 
