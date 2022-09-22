@@ -3,7 +3,7 @@ from typing import Callable, Tuple
 import autograd.numpy as np  # type: ignore
 from autograd import make_jvp, make_vjp  # type: ignore
 
-from .samplers import rademacher
+from .samplers import Sampler, circle
 
 Optimizable = Callable[[np.ndarray], float]
 DOptimizable = Callable[[np.ndarray], Tuple[float, np.ndarray]]
@@ -20,7 +20,7 @@ def df(f: Optimizable) -> DOptimizable:
     return ret
 
 
-def df_fwd(f: Optimizable, sampler=rademacher) -> DOptimizable:
+def df_fwd(f: Optimizable, sampler: Sampler = circle) -> DOptimizable:
     """Returns the first order oracle of f: `x -> f(x), fgrad_f(x)`
     where `fgrad` is the forward gradient of `f`.
     See http://arxiv.org/abs/2202.08587 for more details."""

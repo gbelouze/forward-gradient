@@ -5,6 +5,7 @@ from typing import Optional
 import autograd.numpy as np  # type: ignore
 
 from .grad import DOptimizable, Optimizable, df, df_fwd
+from .samplers import Sampler
 
 
 class DidNotConverge(Exception):
@@ -29,6 +30,7 @@ class LockError(Exception):
 class OptimConfig:
     momentum: float = 1.0
     forward: bool = False
+    forward_sampler: Optional[Sampler] = None
     clip: bool = False  # clip the gradients to 1
 
 
@@ -97,7 +99,12 @@ class Optim:
         self.updater = updater
 
     def optimize(self, f: Optimizable) -> OptimContextManager:
-        f_df = df_fwd(f) if self.config.forward else df(f)
+        if self.config.forward and self.config.forward_sampler is not None:
+            f_df = df_fwd(f, sampler=self.config.forward_sampler)
+        elif self.config.forward:
+            f_df = df_fwd(f)
+        else:
+            f_df = df(f)
         return OptimContextManager(self.updater, f_df)
 
 
@@ -237,8 +244,7 @@ def descent(
     domain: Optional[np.ndarray] = None,
 ):
     """Performs gradient descent until a loss lower than [target] is found,
-    or [max_epochs] iterations have passed.
-    If [target] is negative, performs [max_epochs] iterations no matter what"""
+    or [max_epochs] iterations have passed."""
     theta = theta0.copy()
     best_theta, best_loss = theta.copy(), None
     with optim.optimize(f) as optf:
@@ -255,6 +261,6 @@ def descent(
             epoch += 1
             if epoch >= max_epochs:
                 break
-            if target > 0 and loss - target > 1e5:
+            if loss - target > 1e5:
                 raise DivergenceError
         return epoch, best_theta, best_loss, loss0
