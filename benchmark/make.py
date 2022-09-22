@@ -144,7 +144,8 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
             "loss0",
         ],
     )
-    results.loc[results.epochs == max_epochs, "epochs"] = -1
+    if kind == "performance":
+        results.loc[results.epochs == max_epochs, "epochs"] = -1
 
     if not data_path.exists():
         data_path.mkdir()
