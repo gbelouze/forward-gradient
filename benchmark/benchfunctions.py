@@ -1183,7 +1183,7 @@ class DixonPrice:
 
     def f(self, X):
         res = (X[0] - 1) ** 2 + np.sum(
-            np.arange(2, X.shape[0]) * (2 * X[1:] ** 2 - X[:-1]) ** 2
+            np.arange(2, X.shape[0] + 1) * (2 * X[1:] ** 2 - X[:-1]) ** 2
         )
         return res
 
