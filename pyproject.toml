@@ -23,6 +23,14 @@ classifiers = [
 requires-python = ">=3.9" # necessary for type hints
 license = {"file" = "LICENSE"}
 dynamic = ["version", "description"]
+dependencies = [
+    "pandas >= 1.4.2",
+    "matplotlib >= 3.5.2",
+    "autograd >= 1.4",
+    "numpy >= 1.22.3",
+    "click >= 8.1.3",
+    "rich >= 12.4.1"
+]
 
 [tool.flit.module]
 name = "forward"

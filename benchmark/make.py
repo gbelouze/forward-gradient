@@ -8,6 +8,15 @@ import autograd.numpy as np  # type: ignore
 import click
 import pandas as pd  # type: ignore
 from benchfunctions import get_functions
+from rich.console import Group
+from rich.live import Live
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeRemainingColumn,
+)
 
 from forward import optim
 
@@ -57,71 +66,97 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
     results_ = []
 
     expID = 0
-    for objective in objectives:
-        domain = None
-        if objective.strict_domain:
-            domain = objective.input_domain
-        for _ in range(n_initialisations):
-            print(objective.name)
-            theta_star, f_star = objective.get_global_minimum()
-            theta0 = sample_in_domain(objective.input_domain)
-            expID += 1
-            for optimizer in optimizers:
-                for _ in range(5 if optimizer.stochastic else 1):
-                    try:
-                        t1 = time.process_time()
-                        epochs, _theta, loss, loss0 = optim.descent(
-                            f=objective.f,
-                            theta0=theta0,
-                            target=f_star + epsilon,
-                            optim=optimizer.optim,
-                            lr=0.01,
-                            max_epochs=max_epochs,
-                            domain=domain,
-                        )
-                        if loss - f_star < -1e-10:
-                            print(loss, f_star)
-                            print(theta_star, _theta)
-                            assert False
-                        t2 = time.process_time()
-                        cpu_time = t2 - t1
-                        results_.append(
-                            {
-                                "objective": objective.name,
-                                "optimizer": optimizer.name,
-                                "expID": expID,
-                                "epochs": epochs,
-                                "cpu_time": cpu_time,
-                                "loss": loss - f_star,
-                                "loss0": loss0 - f_star,
-                            }
-                        )
-                        if kind == "accuracy":
-                            print("\t", optimizer.name, "✔️")
-                        elif kind == "performance":
-                            if epochs >= max_epochs:
-                                print(
-                                    "\t",
-                                    optimizer.name,
-                                    "❌⏳",
-                                    f"[final loss = {loss - f_star:.2f}]",
-                                )
-                            else:
-                                print("\t", optimizer.name, "✔️")
 
-                    except optim.DivergenceError:
-                        results_.append(
-                            {
-                                "objective": objective.name,
-                                "optimizer": optimizer.name,
-                                "expID": expID,
-                                "epochs": None,
-                                "cpu_time": None,
-                                "loss": None,
-                                "loss0": None,
-                            }
-                        )
-                        print("\t", optimizer.name, "❌")
+    # overall progress bar
+    overall_progress = Progress(
+        TextColumn("{task.description}"),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TimeRemainingColumn(),
+        refresh_per_second=2,
+    )
+
+    # single benchfunction progress
+    benchfunction_progress = Progress(
+        TextColumn("{task.description}"),
+        SpinnerColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        refresh_per_second=2,
+    )
+
+    # group of progress bars;
+    # some are always visible, others will disappear when progress is complete
+    progress_group = Group(overall_progress, benchfunction_progress)
+
+    n_test_per_objective = n_initialisations * sum(
+        [5 if optimizer.stochastic else 1 for optimizer in optimizers]
+    )
+
+    with Live(progress_group):
+        overall_task_id = overall_progress.add_task(
+            "[green]Generating data...", total=len(objectives) * n_test_per_objective
+        )
+        for objective in objectives:
+            benchfunction_task_id = benchfunction_progress.add_task(
+                f"[bold green]Testing {objective.name}", total=n_test_per_objective
+            )
+            domain = None
+            if objective.strict_domain:
+                domain = objective.input_domain
+            for _ in range(n_initialisations):
+                theta_star, f_star = objective.get_global_minimum()
+                theta0 = sample_in_domain(objective.input_domain)
+                expID += 1
+                for optimizer in optimizers:
+                    for _ in range(5 if optimizer.stochastic else 1):
+                        try:
+                            t1 = time.process_time()
+                            epochs, _theta, loss, loss0 = optim.descent(
+                                f=objective.f,
+                                theta0=theta0,
+                                target=f_star + epsilon,
+                                optim=optimizer.optim,
+                                lr=0.01,
+                                max_epochs=max_epochs,
+                                domain=domain,
+                            )
+                            if loss - f_star < -1e-10:
+                                print(loss, f_star)
+                                print(theta_star, _theta)
+                                assert False
+                            t2 = time.process_time()
+                            cpu_time = t2 - t1
+                            results_.append(
+                                {
+                                    "objective": objective.name,
+                                    "optimizer": optimizer.name,
+                                    "expID": expID,
+                                    "epochs": epochs,
+                                    "cpu_time": cpu_time,
+                                    "loss": loss - f_star,
+                                    "loss0": loss0 - f_star,
+                                }
+                            )
+
+                        except optim.DivergenceError:
+                            results_.append(
+                                {
+                                    "objective": objective.name,
+                                    "optimizer": optimizer.name,
+                                    "expID": expID,
+                                    "epochs": None,
+                                    "cpu_time": None,
+                                    "loss": None,
+                                    "loss0": None,
+                                }
+                            )
+                        finally:
+                            benchfunction_progress.update(
+                                benchfunction_task_id, advance=1
+                            )
+                            overall_progress.update(overall_task_id, advance=1)
+            benchfunction_progress.update(benchfunction_task_id, visible=False)
+            benchfunction_progress.stop_task(benchfunction_task_id)
 
     results = pd.DataFrame(
         results_,
