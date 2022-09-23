@@ -1,5 +1,7 @@
 """Generate the benchmarking data"""
 
+import multiprocessing
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,6 +12,7 @@ import pandas as pd  # type: ignore
 from benchfunctions import get_functions
 from rich.console import Group
 from rich.live import Live
+from rich.panel import Panel
 from rich.progress import (
     BarColumn,
     Progress,
@@ -60,12 +63,102 @@ def sample_in_domain(domain):
     return domain[:, 0] + theta * (domain[:, 1] - domain[:, 0])
 
 
-def make(dim, n_initialisations, epsilon, max_epochs, kind):
-    assert kind in ["accuracy", "performance"]
-    objectives = [f(dim) for f in get_functions(dim, multimodal=False)]
-    results_ = []
+# a global variable is necessary to share a Value between processes
+overall_progress_completed = None
 
-    expID = 0
+
+def value_initializer(value):
+    global overall_progress_completed
+    overall_progress_completed = value
+
+
+def make_single_objective_(
+    objective,
+    expID,
+    n_initialisations,
+    epsilon,
+    max_epochs,
+    progress_dict,
+    benchfunction_task_id,
+):
+    results = []
+
+    domain = None
+    if objective.strict_domain:
+        domain = objective.input_domain
+
+    task_completion = 0
+    for _ in range(n_initialisations):
+        theta_star, f_star = objective.get_global_minimum()
+        theta0 = sample_in_domain(objective.input_domain)
+        expID += 1
+        for optimizer in optimizers:
+            for _ in range(5 if optimizer.stochastic else 1):
+                try:
+                    t1 = time.process_time()
+                    epochs, _theta, loss, loss0 = optim.descent(
+                        f=objective.f,
+                        theta0=theta0,
+                        target=f_star + epsilon,
+                        optim=optimizer.optim,
+                        lr=0.01,
+                        max_epochs=max_epochs,
+                        domain=domain,
+                    )
+                    if loss - f_star < -1e-10:
+                        print(loss, f_star)
+                        print(theta_star, _theta)
+                        assert False
+                    t2 = time.process_time()
+                    cpu_time = t2 - t1
+                    results.append(
+                        {
+                            "objective": objective.name,
+                            "optimizer": optimizer.name,
+                            "expID": expID,
+                            "epochs": epochs,
+                            "cpu_time": cpu_time,
+                            "loss": loss - f_star,
+                            "loss0": loss0 - f_star,
+                        }
+                    )
+
+                except optim.DivergenceError:
+                    results.append(
+                        {
+                            "objective": objective.name,
+                            "optimizer": optimizer.name,
+                            "expID": expID,
+                            "epochs": None,
+                            "cpu_time": None,
+                            "loss": None,
+                            "loss0": None,
+                        }
+                    )
+                finally:
+                    task_completion += 1
+                    progress_dict[benchfunction_task_id] = task_completion
+                    with overall_progress_completed.get_lock():
+                        overall_progress_completed.value += 1
+    return results
+
+
+def make_single_objective(*args, **kwargs):
+    """Handle keyboard interrupt so that the child process immediately returns"""
+    try:
+        return make_single_objective_(*args, **kwargs)
+    except KeyboardInterrupt:
+        return "KeyboardInterrupt"
+
+
+def stop_task(benchfunction_progress, benchfunction_task_id):
+    benchfunction_progress.update(benchfunction_task_id, visible=False)
+    benchfunction_progress.stop_task(benchfunction_task_id)
+
+
+def make(dims, n_initialisations, epsilon, max_epochs, kind):
+    global overall_progress_completed
+    assert kind in ["accuracy", "performance"]
 
     # overall progress bar
     overall_progress = Progress(
@@ -73,7 +166,7 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeRemainingColumn(),
-        refresh_per_second=2,
+        refresh_per_second=0.2,
     )
 
     # single benchfunction progress
@@ -81,82 +174,102 @@ def make(dim, n_initialisations, epsilon, max_epochs, kind):
         TextColumn("{task.description}"),
         SpinnerColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        refresh_per_second=2,
+        refresh_per_second=0.2,
     )
 
     # group of progress bars;
     # some are always visible, others will disappear when progress is complete
-    progress_group = Group(overall_progress, benchfunction_progress)
+    progress_group = Group(Panel(benchfunction_progress), overall_progress)
 
-    n_test_per_objective = n_initialisations * sum(
-        [5 if optimizer.stochastic else 1 for optimizer in optimizers]
-    )
+    dim_to_objectives = {
+        dim: [f(dim) for f in get_functions(dim, multimodal=False)] for dim in dims
+    }
+    results_ = []
+
+    expID = 0
+
+    n_test_per_objective = {
+        dim: n_initialisations
+        * sum([5 if optimizer.stochastic else 1 for optimizer in optimizers])
+        for dim, objectives in dim_to_objectives.items()
+    }
 
     with Live(progress_group):
         overall_task_id = overall_progress.add_task(
-            "[green]Generating data...", total=len(objectives) * n_test_per_objective
+            "[green]Generating data...",
+            total=sum(
+                [
+                    len(objectives) * n_test_per_objective[dim]
+                    for dim, objectives in dim_to_objectives.items()
+                ]
+            ),
         )
-        for objective in objectives:
-            benchfunction_task_id = benchfunction_progress.add_task(
-                f"[bold green]Testing {objective.name}", total=n_test_per_objective
-            )
-            domain = None
-            if objective.strict_domain:
-                domain = objective.input_domain
-            for _ in range(n_initialisations):
-                theta_star, f_star = objective.get_global_minimum()
-                theta0 = sample_in_domain(objective.input_domain)
-                expID += 1
-                for optimizer in optimizers:
-                    for _ in range(5 if optimizer.stochastic else 1):
-                        try:
-                            t1 = time.process_time()
-                            epochs, _theta, loss, loss0 = optim.descent(
-                                f=objective.f,
-                                theta0=theta0,
-                                target=f_star + epsilon,
-                                optim=optimizer.optim,
-                                lr=0.01,
-                                max_epochs=max_epochs,
-                                domain=domain,
-                            )
-                            if loss - f_star < -1e-10:
-                                print(loss, f_star)
-                                print(theta_star, _theta)
-                                assert False
-                            t2 = time.process_time()
-                            cpu_time = t2 - t1
-                            results_.append(
-                                {
-                                    "objective": objective.name,
-                                    "optimizer": optimizer.name,
-                                    "expID": expID,
-                                    "epochs": epochs,
-                                    "cpu_time": cpu_time,
-                                    "loss": loss - f_star,
-                                    "loss0": loss0 - f_star,
-                                }
-                            )
 
-                        except optim.DivergenceError:
-                            results_.append(
-                                {
-                                    "objective": objective.name,
-                                    "optimizer": optimizer.name,
-                                    "expID": expID,
-                                    "epochs": None,
-                                    "cpu_time": None,
-                                    "loss": None,
-                                    "loss0": None,
-                                }
+        jobs = []
+        with multiprocessing.Manager() as manager:
+            # we share progress information between processes
+            progress_dict = manager.dict()
+            overall_progress_completed = multiprocessing.Value("i", 0)
+
+            with multiprocessing.Pool(
+                max(1, os.cpu_count() - 2),
+                initializer=value_initializer,
+                initargs=(overall_progress_completed,),
+            ) as pool:
+
+                for dim, objectives in dim_to_objectives.items():
+                    for objective in objectives:
+                        benchfunction_task_id = benchfunction_progress.add_task(
+                            f"[bold green]Testing {objective.name} (dim={objective.d})",
+                            total=n_test_per_objective[dim],
+                            visible=False,
+                        )
+                        jobs.append(
+                            pool.apply_async(
+                                make_single_objective,
+                                (
+                                    objective,
+                                    expID,
+                                    n_initialisations,
+                                    epsilon,
+                                    max_epochs,
+                                    progress_dict,
+                                    benchfunction_task_id,
+                                ),
                             )
-                        finally:
+                        )
+                        expID += n_test_per_objective[dim]
+
+                try:
+                    while not all([job.ready() for job in jobs]):
+                        overall_progress.update(
+                            overall_task_id, completed=overall_progress_completed.value
+                        )
+
+                        to_remove = []
+                        for benchfunction_task_id, completed in progress_dict.items():
                             benchfunction_progress.update(
-                                benchfunction_task_id, advance=1
+                                benchfunction_task_id, completed=completed
                             )
-                            overall_progress.update(overall_task_id, advance=1)
-            benchfunction_progress.update(benchfunction_task_id, visible=False)
-            benchfunction_progress.stop_task(benchfunction_task_id)
+                            task = benchfunction_progress.tasks[benchfunction_task_id]
+                            if task.finished:
+                                benchfunction_progress.update(
+                                    benchfunction_task_id, visible=False
+                                )
+                                benchfunction_progress.stop_task(benchfunction_task_id)
+                                to_remove.append(benchfunction_task_id)
+                            else:
+                                benchfunction_progress.update(
+                                    benchfunction_task_id, visible=True
+                                )
+                        for benchfunction_task_id in to_remove:
+                            del progress_dict[benchfunction_task_id]
+
+                    for job in jobs:
+                        results_ += job.get()
+                except KeyboardInterrupt:
+                    pool.terminate()
+                    raise
 
     results = pd.DataFrame(
         results_,
@@ -197,7 +310,7 @@ def main():
 
 
 @main.command()
-@click.option("--dim", default=2, help="Dimension of the problems.")
+@click.option("--dim", multiple=True, default=[2], help="Dimension of the problems.")
 @click.option(
     "--n-initialisations",
     default=5,
@@ -215,7 +328,7 @@ def performance(dim, n_initialisations, epsilon, max_epochs):
 
 
 @main.command()
-@click.option("--dim", default=2, help="Dimension of the problems.")
+@click.option("--dim", multiple=True, default=[2], help="Dimension of the problems.")
 @click.option(
     "--n-initialisations",
     default=5,
