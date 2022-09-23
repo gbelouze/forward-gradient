@@ -32,9 +32,14 @@ def read_experiment_files(dimToPaths: dict[int, list[Path]]) -> dict[int, pd.Dat
 
 def accuracy_profile(df: pd.DataFrame):
     M = 10
+    df.loss += 10 ** (-M)
     if any(df.loss < 0):
+        print(
+            "Negative loss found for test functions",
+            set(df.objective[df.loss < 0].values),
+        )
         raise ValueError("Negative loss found in experiments")
-    df.loc[df.loss == 0, "loss"] = np.exp(-2 * M)
+    # df.loc[df.loss == 0, "loss"] = np.exp(-2 * M)
     df["accuracy"] = -np.log(df.loss) + np.log(df.loss0)
     df.loc[df.accuracy > M, "accuracy"] = M
 
@@ -53,7 +58,7 @@ def accuracy_profile(df: pd.DataFrame):
     def ap(optimizer):
         """Accuracy profile"""
         values = sorted(
-            experiments.xs(optimizer, level="optimizer").MeanAccuracy.values,
+            experiments.xs(optimizer, level="optimizer").MeanAccuracy.dropna().values,
             reverse=True,
         )
         taus = sorted(list(set(values) | set([0, max_tau])))
@@ -140,7 +145,7 @@ def main(task):
             squeeze=False,
             sharey=True,
             sharex=True,
-            figsize=(5, len(dimToDf) * 5),
+            figsize=(len(dimToDf) * 5, 5),
         )
         for ax, (dim, df) in zip(axs[0], dimToDf.items()):
             profiles = performance_profile(df)
@@ -176,7 +181,7 @@ def main(task):
             squeeze=False,
             sharey=True,
             sharex=True,
-            figsize=(5, len(dimToDf) * 5),
+            figsize=(len(dimToDf) * 5, 5),
         )
         for ax, (dim, df) in zip(axs[0], dimToDf.items()):
             profiles = accuracy_profile(df)
